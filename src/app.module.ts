@@ -7,6 +7,7 @@ import { AccountsModule } from './modules/accounts/accounts.module';
 import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './modules/users/entities/user.entity';
+import { AuthModule } from './modules/auth/auth.module';
 
 
 
@@ -40,7 +41,8 @@ import { User } from './modules/users/entities/user.entity';
             
         }
       }
-    })
+    }),
+    AuthModule
  
   ],
   controllers: [AppController],
