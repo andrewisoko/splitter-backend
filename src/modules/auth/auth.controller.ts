@@ -13,13 +13,15 @@ export class AuthController {
 
     @Post('register')
     async createUser(
-    @Body('fullname') fullName:string,
-    @Body('email') email:string,
-    @Body('password') password: string,
-    @Body('number') number:number,
+    @Body() authDto:AuthDTO
     ){
-        const hashedpassword = await bcrypt.hash(password,10)
-        return this.userService.createUser({fullName,email,number,password:hashedpassword})
+        const hashedpassword = await bcrypt.hash(authDto.password,10)
+        return this.userService.createUser({
+            name:authDto.name,
+            email:authDto.email,
+            number:authDto.number,
+            password:hashedpassword
+        })
     }
 
     @Post('login')
