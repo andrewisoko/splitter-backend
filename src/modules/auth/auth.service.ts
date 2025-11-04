@@ -10,11 +10,19 @@ import { User } from '../users/entities/user.entity';
 
 @Injectable()
 export class AuthService {
-    constructor( private readonly userService:UsersService){}
+    constructor( private readonly userService:UsersService,
+        private readonly jwtService:JwtService
+    ){}
     
-    async validateUser(name:string,email:string,password:string){
-        const user = this.userService.findUserByEmail(email)
+    async validateUser(email:string,password:string){
+        const user = await this.userService.findUserByEmail(email)
+        if (!user) throw new UnauthorizedException('Invalid credentials')
+
+        const isValidPassword = await bcrypt.compare(password,user.password)
+        if (!isValidPassword) throw new UnauthorizedException('Incorrect password')
+        
         return user
+
     }
 
     async login(user:User){
@@ -24,7 +32,7 @@ export class AuthService {
             email: user.email,
         }
 
-        return "access token and jwt"
+        return {access_token: this.jwtService.sign(payload)}
     }
 }
 
