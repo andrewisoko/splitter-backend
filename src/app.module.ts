@@ -15,7 +15,7 @@ import { AuthModule } from './modules/auth/auth.module';
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true,
     envFilePath: __dirname + '/../.env',
-  }), UsersModule, AccountsModule, TransactionsModule,
+  }), UsersModule, AccountsModule, TransactionsModule,AuthModule,
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
