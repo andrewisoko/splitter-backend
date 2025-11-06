@@ -17,7 +17,8 @@ export class AuthController {
     ){
         const hashedpassword = await bcrypt.hash(authDto.password,10)
         return this.userService.createUser({
-            name:authDto.name,
+            fullName:authDto.fullName,
+            userName:authDto.userName,
             email:authDto.email,
             number:authDto.number,
             password:hashedpassword

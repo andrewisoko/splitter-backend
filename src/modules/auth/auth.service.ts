@@ -1,6 +1,4 @@
 import { Injectable,Logger,UnauthorizedException } from '@nestjs/common';
-import { InjectRepository} from '@nestjs/typeorm';
-import {Repository} from 'typeorm'
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -34,5 +32,15 @@ export class AuthService {
 
         return {access_token: this.jwtService.sign(payload)}
     }
+
+    // async resetPassword(id:number,email:string,password:string){
+
+    //     const userEmail = await this.userService.findUserByEmail(email)
+    //     if (!userEmail) throw new UnauthorizedException('Email Invalid')
+        
+    //     const userId = await this.userService.findUserById(id)
+    //     const newPassword = this.userService.updateUser(userId,password)
+
+    // }
 }
 

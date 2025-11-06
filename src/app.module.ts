@@ -21,13 +21,13 @@ import { AuthModule } from './modules/auth/auth.module';
       inject: [ConfigService],
       useFactory:(configService:ConfigService) => {
 
-          console.log('ENV LOADED:', {
-          host: configService.get('DB_HOST'),
-          port: configService.get('DB_PORT'),
-          user: configService.get('DB_USER'),
-          pass: configService.get('DB_PASS'),
-          name: configService.get('DB_NAME'),
-        });
+        //   console.log('ENV LOADED:', {
+        //   host: configService.get('DB_HOST'),
+        //   port: configService.get('DB_PORT'),
+        //   user: configService.get('DB_USER'),
+        //   pass: configService.get('DB_PASS'),
+        //   name: configService.get('DB_NAME'),
+        // });
 
         return{
             type: 'postgres',
@@ -42,8 +42,6 @@ import { AuthModule } from './modules/auth/auth.module';
         }
       }
     }),
-    AuthModule
- 
   ],
   controllers: [AppController],
   providers: [AppService],
