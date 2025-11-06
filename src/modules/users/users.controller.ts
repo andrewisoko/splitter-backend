@@ -35,6 +35,6 @@ export class UsersController {
     ):Promise<User>{
         return this.usersService.updateUser(id,data)
     }
-
+ 
 }
 

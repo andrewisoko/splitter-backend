@@ -3,7 +3,7 @@ import { User } from './entities/user.entity';
 import { InjectRepository} from '@nestjs/typeorm';
 import {Repository} from 'typeorm'
 import { UpdateUserDto } from './dto/update-user.dto';
-import { AuthDTO } from '../auth/auth.dto';
+import { registerDto } from '../auth/register.dto';
 
 @Injectable()
 export class UsersService {
@@ -18,7 +18,7 @@ export class UsersService {
         return this.userRepository.findOneBy({id})
     }
 
-    createUser(data:Partial<AuthDTO>){
+    createUser(data:Partial<registerDto>){
         const user = this.userRepository.create(data)
         return this.userRepository.save(user)
     }
@@ -27,7 +27,7 @@ export class UsersService {
         const user = await this.userRepository.findOne({where:{id}})
         if (!user) throw new NotFoundException(`User with id:${id} not found`)
         
-        Object.assign(id,data)
+        Object.assign(user,data)
         return this.userRepository.save(user)
     }
 

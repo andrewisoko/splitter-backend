@@ -13,19 +13,25 @@ export class User{
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column()
+    @Column({
+    type:"enum",
+    enum: Role,
+    default:Role.USER,
+    })
+    role:Role
+
+    @Column({nullable:true})
         fullName:string;
 
-    @Column()
+    @Column({nullable:true})
         userName:string;
 
-    @Column()
+    @Column({nullable:true})
         number:number;
 
-    @Column()
+    @Column({nullable:false})
         email:string;
 
-    @Column()
-        password:string;
-        
+    @Column({nullable:false})
+        password:string;       
 }
