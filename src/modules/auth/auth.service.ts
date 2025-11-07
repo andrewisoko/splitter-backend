@@ -31,12 +31,12 @@ export class AuthService {
             sub : user.id,
             name: user.fullName,
             email: user.email,
+            role: user.role
         }
-
         return {access_token: this.jwtService.sign(payload)}
     }
 
-    async resetPassword(email:string,password:string){
+    async resetPassword(email:string,password:string){ /**add 2FA  */
 
         const user = await this.userService.findUserByEmail(email)
         if (!user) throw new UnauthorizedException('Email Invalid')

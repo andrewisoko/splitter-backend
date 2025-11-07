@@ -26,7 +26,7 @@ export class UsersController {
         return this.usersService.deleteUser(id) 
     }
  
-    @UseGuards(JwtAuthGuard,RolesGuard)
+    @UseGuards(JwtAuthGuard,RolesGuard)  /** restrict id choice */
     @Roles(Role.USER)
     @Patch(':id')
     updateUser(

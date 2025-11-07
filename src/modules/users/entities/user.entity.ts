@@ -1,4 +1,5 @@
-import {Entity,PrimaryGeneratedColumn,Column} from 'typeorm'
+import { Account } from 'src/modules/accounts/entities/account.entity';
+import {Entity,PrimaryGeneratedColumn,Column, OneToMany} from 'typeorm'
 
 
 export enum Role {
@@ -33,5 +34,9 @@ export class User{
         email:string;
 
     @Column({nullable:false})
-        password:string;       
+        password:string;    
+        
+    @OneToMany(() => Account,account => account.user)
+        accounts:Account[]
 }
+
