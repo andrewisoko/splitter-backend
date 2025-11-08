@@ -2,7 +2,7 @@ import { Body, Controller, Post } from '@nestjs/common';
 import { registerDto as RegisterDto } from './register.dto';
 import { UsersService } from '../users/users.service';
 import { AuthService } from './auth.service';
-import { loginDto, loginDto as LoginDto } from './login.dto';
+import { loginDto as LoginDto } from './login.dto';
 import * as bcrypt from 'bcrypt';
 import { Role } from '../users/entities/user.entity';
 
