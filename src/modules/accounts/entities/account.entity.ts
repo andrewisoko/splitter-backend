@@ -1,11 +1,24 @@
 import { User } from "src/modules/users/entities/user.entity";
-import { Column,ManyToOne,PrimaryColumn } from "typeorm";
+import { Column,Entity,ManyToOne,PrimaryGeneratedColumn } from "typeorm";
+
+
+export enum AccountStatus {
+
+    ACTIVE = "active",
+    INACTIVE = 'Inactive',
+    SUSPENDED = 'Suspended',
+    CLOSE  = 'Closed',
+    PENDING = 'Pending',
+
+}
+
+@Entity('accounts')
 
 
 export class Account{
 
 
-    @PrimaryColumn()
+    @PrimaryGeneratedColumn()
     accountID:number;
 
     @Column()
@@ -20,8 +33,12 @@ export class Account{
     @Column()
     currency:string;
 
-    @Column()
-    status:string;
+    @Column({
+        type:"enum",
+        enum:AccountStatus,
+        default:AccountStatus.ACTIVE
+    })
+    status:AccountStatus;
 
     @Column()
     createdAt:Date;

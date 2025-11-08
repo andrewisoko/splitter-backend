@@ -8,6 +8,7 @@ import { TransactionsModule } from './modules/transactions/transactions.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './modules/users/entities/user.entity';
 import { AuthModule } from './modules/auth/auth.module';
+import { Account } from './modules/accounts/entities/account.entity';
 
 
 
@@ -36,7 +37,7 @@ import { AuthModule } from './modules/auth/auth.module';
             username: configService.get<string>('DB_USER'),
             password: configService.get<string>('DB_PASS'),
             database: configService.get<string>('DB_NAME'),
-            entities: [User],
+            entities: [User,Account],
             synchronize: true
             
         }

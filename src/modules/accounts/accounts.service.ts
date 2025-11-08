@@ -1,7 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Account } from './entities/account.entity';
+import { Account, AccountStatus } from './entities/account.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from '../auth/auth.service';
 
@@ -13,15 +13,40 @@ export class AccountsService {
                 private authService:AuthService,
     ){}
 
-    async createAccount(username:string,currency:string,balance:number):Promise<Account>{  /**create a list that contains all the currencies to check validation */
+    accountNumberGenerator():number{ 
+
+        let randomNumList:Array<number> = []
+        let num: number = 0
+        let randomNumber:() => number = () => Math.floor(Math.random()*10)
+
+        while (num < 8){
+        randomNumList.push(randomNumber())
+        num ++
+        }
+        let ranNumString:string = randomNumList.join("")
+        let eightSequence = Number(ranNumString)
+
+        return eightSequence
+
+    }
+
+    async createAccount(username:string,currency:string,balance:number):Promise<Account>{ 
         const user = await this.userRepository.findOneBy({ userName: username });
         if(!user) throw new NotFoundException("user not found")
         if(balance < 25) throw new Error("Insufficent balance")
 
+        const accNumber = this.accountNumberGenerator()
         const userAccount = await this.accountRepository.create({
-           user:user,
-           currency:currency,
-           balance,
+
+            accountNumber:accNumber,
+            currency:currency,
+            balance,
+            user:user,
+            userReference:user.id,
+            status:AccountStatus.ACTIVE,
+            createdAt: new Date(),
+            updatedAt: new Date()
+
         })
         return this.accountRepository.save(userAccount)
     }
@@ -29,7 +54,7 @@ export class AccountsService {
     async retrieveAccount(email:string,password:string,accountId:number){
 
         const validUser = await this.authService.validateUser(email,password)
-        return validUser.accounts.forEach((account => this.accountRepository.findOne({where:{accountID:accountId}})))
+        return await validUser.accounts.forEach((account => this.accountRepository.findOne({where:{accountID:accountId}})))
     }
 
     async deposit(accountId:number,deposit:number){
