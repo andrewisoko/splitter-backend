@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException,UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account, AccountStatus } from './entities/account.entity';
@@ -51,21 +51,29 @@ export class AccountsService {
         return this.accountRepository.save(userAccount)
     }
 
-    async retrieveAccount(email:string,password:string,accountId:number){
+    async retrieveAccount(email: string, password: string, accountId: number) {
 
-        const validUser = await this.authService.validateUser(email,password)
-        return await validUser.accounts.forEach((account => this.accountRepository.findOne({where:{accountID:accountId}})))
-    }
+        const validUser = await this.authService.validateUser(email, password);
+        if (!validUser) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+        const account = await this.accountRepository.findOne({ where:{accountID: accountId}});
+        if (!account) throw new NotFoundException('Account not found');
+
+        return account
+        }
+
 
     async deposit(accountId:number,deposit:number){
-        const account = await this.accountRepository.findOneBy({ accountID: accountId });
+        const account = await this.accountRepository.findOne({ where:{accountID: accountId}});
 
         if (!account) throw new NotFoundException('Account not found');
         if( account.balance > 12000) throw new Error('invald amount');
         
         const balanceDeposit = deposit + account.balance
         account.balance = balanceDeposit
-        
+        account.updatedAt =  new Date()
+
         return this.accountRepository.save(account)
 
         }
@@ -76,8 +84,9 @@ export class AccountsService {
         if (!account) throw new NotFoundException('Account not found');
         if(account.balance < 0) throw new Error('invald amount');
 
-        const balanceDeposit = withdraw - account.balance
+        const balanceDeposit = account.balance - withdraw
         account.balance = balanceDeposit
+        account.updatedAt =  new Date()
         
         return this.accountRepository.save(account)
 

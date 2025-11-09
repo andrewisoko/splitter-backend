@@ -30,16 +30,16 @@ export class AccountsController {
 
     @Post('deposit')
     deposit(
-        @Body() deposit:number,accountDto:{accountID:number}
+          @Body() depositAccountDto:{deposit:number,accountId: number}
     ){
-        return this.accountService.deposit(deposit,accountDto.accountID)
+        return this.accountService.deposit(depositAccountDto.accountId,depositAccountDto.deposit)
     }
 
     @Post('withdraw')
     withdraw(
-        @Body() withdraw:number,accountDto:{accountID:number}
+       @Body() withdrawAccountDto:{withdraw:number,accountId: number}
     ){
-        return this.accountService.deposit(withdraw,accountDto.accountID)
+        return this.accountService.withdraw(withdrawAccountDto.accountId,withdrawAccountDto.withdraw)
     }
 
 }
