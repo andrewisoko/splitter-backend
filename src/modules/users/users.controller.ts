@@ -13,7 +13,7 @@ export class UsersController {
     constructor( private usersService:UsersService){}
 
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN)
+    @Roles(Role.ADMIN) 
     @Get(':id')
     findUser(@Param('id',ParseIntPipe) id:number):Promise<User|null>{
         return this.usersService.findUserById(id)
@@ -26,7 +26,7 @@ export class UsersController {
         return this.usersService.deleteUser(id) 
     }
  
-    @UseGuards(JwtAuthGuard,RolesGuard)  /** restrict id choice */
+    @UseGuards(JwtAuthGuard,RolesGuard)  
     @Roles(Role.USER)
     @Patch(':id')
     updateUser(

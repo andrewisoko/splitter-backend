@@ -1,13 +1,15 @@
 import { Controller,Post,Body } from '@nestjs/common';
 import { AccountsService } from './accounts.service';
-import { loginDto as LoginDto } from '../auth/login.dto';
-import { AuthService } from '../auth/auth.service';
+import { AuthGuard } from '@nestjs/passport';
+import { UseGuards } from '@nestjs/common';
+
 
 @Controller('accounts')
 export class AccountsController {
     constructor(private accountService:AccountsService,
     ){}
 
+    @UseGuards(AuthGuard('jwt'))
     @Post('create')
     createAccount(
         @Body() createAccountDto:{ username: string; currency: string; balance: number }
@@ -18,6 +20,7 @@ export class AccountsController {
         )
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Post('retrieve-account')
     async retrieveAccount(
         @Body() retrieveAccountDto:{email:string; password: string; accountId: number}
@@ -28,6 +31,19 @@ export class AccountsController {
         )
     }
 
+
+    @UseGuards(AuthGuard('jwt'))
+    @Post('find-all-accounts')
+    async findAllAccounts(
+        @Body() findAllAccountsDto:{email:string; password: string; accountId: number}
+    ){
+        return this.accountService.findAllAccounts(findAllAccountsDto.email,
+            findAllAccountsDto.password
+        )
+    }
+
+
+    @UseGuards(AuthGuard('jwt'))
     @Post('deposit')
     deposit(
           @Body() depositAccountDto:{deposit:number,accountId: number}
@@ -35,6 +51,7 @@ export class AccountsController {
         return this.accountService.deposit(depositAccountDto.accountId,depositAccountDto.deposit)
     }
 
+    @UseGuards(AuthGuard('jwt'))
     @Post('withdraw')
     withdraw(
        @Body() withdrawAccountDto:{withdraw:number,accountId: number}

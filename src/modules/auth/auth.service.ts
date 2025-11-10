@@ -36,13 +36,13 @@ export class AuthService {
         return {access_token: this.jwtService.sign(payload)}
     }
 
-    async resetPassword(email:string,password:string){ /**add 2FA  */
+    async resetPassword(email:string,password:string){ 
 
         const user = await this.userService.findUserByEmail(email)
         if (!user) throw new UnauthorizedException('Email Invalid')
         
         Object.assign(user,{ password: password })
-        return this.userRepository.save(user)
+        return this.userRepository.save(user) 
 
     }
 }

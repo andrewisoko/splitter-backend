@@ -51,21 +51,41 @@ export class AccountsService {
         return this.accountRepository.save(userAccount)
     }
 
-    async retrieveAccount(email: string, password: string, accountId: number) {
+    async findAllAccounts(email: string, password: string): Promise<Account[]> {
 
         const validUser = await this.authService.validateUser(email, password);
         if (!validUser) {
             throw new UnauthorizedException('Invalid credentials');
         }
+
+        const userWithAccounts = await this.userRepository.findOne({
+            where: { id: validUser.id },
+            relations: ['accounts'],
+        });
+
+        if (!userWithAccounts || !userWithAccounts.accounts) {
+            return [];
+        }
+        return userWithAccounts.accounts;
+        }
+
+
+    async retrieveAccount(email: string, password: string, accountId: number):Promise<Account> {
+
+
+        const validUser = await this.authService.validateUser(email, password);
+        if (!validUser) {
+            throw new UnauthorizedException('Invalid credentials');
+        }
+
         const account = await this.accountRepository.findOne({ where:{accountID: accountId}});
         if (!account) throw new NotFoundException('Account not found');
 
         return account
         }
 
-
-    async deposit(accountId:number,deposit:number){
-        const account = await this.accountRepository.findOne({ where:{accountID: accountId}});
+    async deposit(accountId:number,deposit:number):Promise<Account>{
+        const account = await this.accountRepository.findOne({where:{accountID: accountId}});
 
         if (!account) throw new NotFoundException('Account not found');
         if( account.balance > 12000) throw new Error('invald amount');
@@ -78,7 +98,7 @@ export class AccountsService {
 
         }
 
-    async withdraw(accountId:number,withdraw:number){
+    async withdraw(accountId:number,withdraw:number):Promise<Account>{
         const account = await this.accountRepository.findOneBy({ accountID: accountId });
 
         if (!account) throw new NotFoundException('Account not found');

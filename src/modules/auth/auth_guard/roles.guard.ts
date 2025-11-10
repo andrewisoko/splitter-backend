@@ -6,7 +6,7 @@ import { Role } from 'src/modules/users/entities/user.entity';
 export class RolesGuard implements CanActivate{
     constructor(private reflector:Reflector){}
 
-      canActivate(context: ExecutionContext): boolean {
+    canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.get<Role[]>('ROLES_KEY', context.getHandler());
     if (!requiredRoles) {
       return true;

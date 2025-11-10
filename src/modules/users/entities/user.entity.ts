@@ -7,9 +7,8 @@ export enum Role {
     ADMIN = "admin",
 }
 
-
 @Entity('user')
-export class User{
+export class User{ 
 
     @PrimaryGeneratedColumn()
     id: number;
