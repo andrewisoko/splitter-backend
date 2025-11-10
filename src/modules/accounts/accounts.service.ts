@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, NotFoundException,UnauthorizedException } from '@nestjs/common';
+import {  Injectable, NotFoundException,UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account, AccountStatus } from './entities/account.entity';
@@ -88,7 +88,8 @@ export class AccountsService {
         const account = await this.accountRepository.findOne({where:{accountID: accountId}});
 
         if (!account) throw new NotFoundException('Account not found');
-        if( account.balance > 12000) throw new Error('invald amount');
+        if(account.balance + deposit === 12000) throw new Error('Maximum fund amount reached');
+        if( account.balance >= 12000) throw new Error('Maximum fund amount reached');
         
         const balanceDeposit = deposit + account.balance
         account.balance = balanceDeposit
@@ -103,6 +104,7 @@ export class AccountsService {
 
         if (!account) throw new NotFoundException('Account not found');
         if(account.balance < 0) throw new Error('invald amount');
+        if(account.balance < withdraw) throw new Error('invald amount');
 
         const balanceDeposit = account.balance - withdraw
         account.balance = balanceDeposit

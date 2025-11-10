@@ -9,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './modules/users/entities/user.entity';
 import { AuthModule } from './modules/auth/auth.module';
 import { Account } from './modules/accounts/entities/account.entity';
+import { Transactions } from './modules/transactions/entities/transactions.entity';
 
 
 
@@ -21,15 +22,6 @@ import { Account } from './modules/accounts/entities/account.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory:(configService:ConfigService) => {
-
-        //   console.log('ENV LOADED:', {
-        //   host: configService.get('DB_HOST'),
-        //   port: configService.get('DB_PORT'),
-        //   user: configService.get('DB_USER'),
-        //   pass: configService.get('DB_PASS'),
-        //   name: configService.get('DB_NAME'),
-        // });
-
         return{
             type: 'postgres',
             host: configService.get<string>('DB_HOST'),
@@ -37,7 +29,7 @@ import { Account } from './modules/accounts/entities/account.entity';
             username: configService.get<string>('DB_USER'),
             password: configService.get<string>('DB_PASS'),
             database: configService.get<string>('DB_NAME'),
-            entities: [User,Account],
+            entities: [User,Account,Transactions],
             synchronize: true
             
         }

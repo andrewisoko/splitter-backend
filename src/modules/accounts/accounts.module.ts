@@ -8,10 +8,11 @@ import { Account } from './entities/account.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
+import { Transactions } from '../transactions/entities/transactions.entity';
 
 @Module({
   imports:[
-    TypeOrmModule.forFeature([Account,User]),
+    TypeOrmModule.forFeature([Account,User,Transactions]),
     UsersModule,
     ConfigModule,
   ],

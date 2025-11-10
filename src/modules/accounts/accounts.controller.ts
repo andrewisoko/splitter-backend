@@ -12,11 +12,11 @@ export class AccountsController {
     @UseGuards(AuthGuard('jwt'))
     @Post('create')
     createAccount(
-        @Body() createAccountDto:{ username: string; currency: string; balance: number }
+        @Body() createAccountDto:{ username:string; currency:string; initialDeposit:number }
     ){
         return this.accountService.createAccount(createAccountDto.username,
             createAccountDto.currency,
-            createAccountDto.balance
+            createAccountDto.initialDeposit
         )
     }
 

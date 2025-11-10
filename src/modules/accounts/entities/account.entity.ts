@@ -1,5 +1,7 @@
+import { Transactions } from "src/modules/transactions/entities/transactions.entity";
 import { User } from "src/modules/users/entities/user.entity";
-import { Column,Entity,ManyToOne,PrimaryGeneratedColumn } from "typeorm";
+import { Column,Entity,ManyToOne,OneToMany,PrimaryGeneratedColumn} from "typeorm";
+
 
 
 export enum AccountStatus {
@@ -13,8 +15,6 @@ export enum AccountStatus {
 }
 
 @Entity('accounts')
-
-
 export class Account{
 
 
@@ -48,5 +48,8 @@ export class Account{
     
     @ManyToOne(()=>User,user=>user.accounts)
     user:User
+
+    @OneToMany(()=>Transactions,transactions=>transactions.account)
+    transactions:Transactions
 }
 
