@@ -6,14 +6,15 @@ export class TransactionsController {
     constructor(private transactionsService:TransactionsService){}
 
     @Post("create")
-    async createTransation(
-        @Body() createTransactionDto: {amount:number,accountA:number,accountB:number}
+    transferFunds(
+        @Body() createTransferFundsDto:{accountAId: number, accountBId: number, amount: number}
     ){
-        return await this.transactionsService.createTransaction(
-            createTransactionDto.amount,
-            createTransactionDto.accountA,
-            createTransactionDto.accountB
+        return this.transactionsService.transferFunds(
+             createTransferFundsDto.accountAId,
+            createTransferFundsDto.accountBId,
+            createTransferFundsDto.amount
         )
     }
+  
 
 }
