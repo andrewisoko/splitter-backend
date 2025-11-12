@@ -8,6 +8,7 @@ import { NotFoundException } from '@nestjs/common';
 import { AccountsService } from '../accounts/accounts.service';
 import { createDataSource } from '../data.source';
 import { ConfigService } from '@nestjs/config';
+import { TransactionsOutcome } from './transactions.outcome';
 import { Logger } from '@nestjs/common';
 
 
@@ -20,6 +21,7 @@ export class TransactionsService {
                 @InjectRepository(Account) private accountRepository:Repository<Account>,
                 private accountsService:AccountsService,
                 private configService:ConfigService,
+                private transactionOutcome:TransactionsOutcome
             ){}
 
             async transferFunds(accountAId: number, accountBId: number, amount: number){
@@ -52,26 +54,36 @@ export class TransactionsService {
                     accountA.balance -= amount;
                     accountB.balance += amount;
 
+                    accountA.updatedAt = new Date()
+                    accountB.updatedAt = new Date()
+
                     await queryRunner.manager.save(accountA);
                     await queryRunner.manager.save(accountB);
 
                     // Create transaction record
-                    let transaction = new Transactions();
-                    transaction.sourceAccountID = accountAId;
-                    transaction.destinationAccountID = accountBId;
-                    transaction.amount = amount;
-                    transaction.transactionsType = TRANSACTIONS_TYPE.TRANSFER;
-                    transaction.status = STATUS.COMPLETED;
-                    transaction.transactionDate = new Date();
-                    transaction.timeStamp = new Date();
+                    let transaction = this.
+                    transactionOutcome.
+                    completedDataUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,accountAId,accountBId)
 
-                    transaction = await queryRunner.manager.save(transaction)
+
+                    
+                    await queryRunner.manager.save(transaction)
                     
                     await queryRunner.commitTransaction();
-                    Logger.log("Transaction commited and saved")
+                    Logger.log("Transaction Completed!")
 
                      return transaction;
                 } catch (error) {
+
+                    let transaction = this.
+                    transactionOutcome.
+                    failedDataUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,accountAId,accountBId)
+                   
+                    transaction = await queryRunner.manager.save(transaction)
+                    await queryRunner.commitTransaction();
+
+                    Logger.log("Transaction Failed")
+
                     await queryRunner.rollbackTransaction();
                     throw error;    
                 } finally {
@@ -81,40 +93,111 @@ export class TransactionsService {
             }
 
             async depositTransaction(accountId:number,deposit:number){
-            
-                const account = await this.accountRepository.findOne({where:{accountID:accountId}})
-                this.accountsService.withdraw(accountId,deposit)
-            
-                const transactionExecution = await this.transactionsRepository.create({
-                    transactionsType:TRANSACTIONS_TYPE.DEPOSIT,
-                    amount: deposit,
-                    transactionDate: new Date(),
-                    destinationAccountID:account?.accountID,
-                    status:STATUS.COMPLETED,
-                    timeStamp: new Date()
-                })
+
+                const AppDataSource = createDataSource(this.configService);
+
+                await AppDataSource.initialize().
+                then(()=>
+                    console.log('Data Source has been initialised!')
+                )
+                .catch((err)=>
+                     console.error('Error during Data Source initialisation', err)
+                )
                 
-                return this.transactionsRepository.save(transactionExecution)
+                const queryRunner = AppDataSource.createQueryRunner();
+                
+                await queryRunner.connect();
+                await queryRunner.startTransaction();
+                
+                try {
+                    
+                    
+                    const account = queryRunner.manager.findOne(Account,{where:{accountID:accountId}})
+                    if (!account) throw new Error('account not found');
+
+                    this.accountsService.deposit(accountId,deposit)
+                    
+                    let transaction = this.
+                    transactionOutcome.
+                    completedDataUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,accountId)
+                    
+                    await queryRunner.manager.save(transaction)
+                    
+                    await queryRunner.commitTransaction();
+                    Logger.log("Transaction Completed!")
+
+                    return transaction;
+    
+                } catch (error) {
+                          let transaction = this.
+                    transactionOutcome.
+                    failedDataUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,undefined,accountId)
+                   
+                    transaction = await queryRunner.manager.save(transaction)
+                    await queryRunner.commitTransaction();
+
+                    Logger.log("Transaction Failed")
+
+                    await queryRunner.rollbackTransaction();
+                    throw error; 
+
+                } finally{
+                    await queryRunner.release();
+                }
             }
 
-        async withdrawTransaction(accountId:number,withdraw:number){
+            async withdrawTransaction(accountId:number,withdraw:number){
 
-        const account = await this.accountRepository.findOne({where:{accountID:accountId}})
+                const AppDataSource = createDataSource(this.configService);
 
-        if (!account) throw new NotFoundException("account not found")
-        if (account.balance < withdraw) throw new ForbiddenException("Insufficient funds")
+                await AppDataSource.initialize().
+                then(()=>
+                    console.log('Data Source has been initialised!')
+                )
+                .catch((err)=>
+                     console.error('Error during Data Source initialisation', err)
+                )
+                
+                const queryRunner = AppDataSource.createQueryRunner();
+                
+                await queryRunner.connect();
+                await queryRunner.startTransaction();
+                
+                try {
+                    
+                    const account = queryRunner.manager.findOne(Account,{where:{accountID:accountId}})
+                    if (!account) throw new Error('account not found');
 
-        this.accountsService.withdraw(accountId,withdraw)
+                    this.accountsService.withdraw(accountId,withdraw)
 
-        const transactionExecution = await this.transactionsRepository.create({
-            transactionsType:TRANSACTIONS_TYPE.WITHDRAW,
-            amount: withdraw,
-            transactionDate: new Date(),
-            sourceAccountID: account?.accountID,
-            status:STATUS.COMPLETED,
-            timeStamp: new Date()
-        })
+                    let transaction = this.
+                    transactionOutcome.
+                    completedDataUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,accountId)
 
-        return this.transactionsRepository.save(transactionExecution)
-    }
+                    transaction = await queryRunner.manager.save(transaction)
+
+                    await queryRunner.commitTransaction();
+                    Logger.log("Transaction Completed!")
+
+                    return transaction;
+    
+                } catch (error) {
+                          let transaction = this.
+                    transactionOutcome.
+                    failedDataUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,accountId)
+                   
+                    transaction = await queryRunner.manager.save(transaction)
+                    await queryRunner.commitTransaction();
+
+                    Logger.log("Transaction Failed")
+
+                    await queryRunner.rollbackTransaction();
+                    throw error; 
+
+                } finally{
+                    await queryRunner.release();
+                }
+            }
+
+    
 }

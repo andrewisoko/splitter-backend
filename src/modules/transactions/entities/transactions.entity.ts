@@ -39,11 +39,11 @@ export class Transactions{
     transactionDate: Date;
 
     @IsOptional()
-    @Column()
+    @Column({ nullable: true })
     sourceAccountID: number;
 
     @IsOptional()
-    @Column()
+    @Column({ nullable: true })
     destinationAccountID:number;
 
     @Column({

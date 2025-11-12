@@ -102,9 +102,9 @@ export class AccountsService {
     async withdraw(accountId:number,withdraw:number):Promise<Account>{
         const account = await this.accountRepository.findOneBy({ accountID: accountId });
 
-        if (!account) throw new NotFoundException('Account not found');
+        if (!account) throw new NotFoundException('Account not found');        
         if(account.balance < 0) throw new Error('invald amount');
-        if(account.balance < withdraw) throw new Error('invald amount');
+        if(account.balance < withdraw) throw new Error('invald amount');     
 
         const balanceDeposit = account.balance - withdraw
         account.balance = balanceDeposit

@@ -13,6 +13,7 @@ import { AuthModule } from '../auth/auth.module';
 import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
+import { TransactionsOutcome } from './transactions.outcome';
 
 
 @Module({
@@ -28,7 +29,8 @@ import { JwtService } from '@nestjs/jwt';
     AccountsService,
     AuthService,
     UsersService,
-    JwtService
+    JwtService,
+    TransactionsOutcome
   ],
   controllers: [TransactionsController]
 })
