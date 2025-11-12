@@ -88,7 +88,7 @@ export class AccountsService {
         const account = await this.accountRepository.findOne({where:{accountID: accountId}});
 
         if (!account) throw new NotFoundException('Account not found');
-        if(account.balance + deposit === 12000) throw new Error('Maximum fund amount reached');
+        if(account.balance + deposit >= 12000) throw new Error('Maximum fund amount reached');
         if( account.balance >= 12000) throw new Error('Maximum fund amount reached');
         
         const balanceDeposit = deposit + account.balance

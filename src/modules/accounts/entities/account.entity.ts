@@ -50,6 +50,6 @@ export class Account{
     user:User
 
     @OneToMany(()=>Transactions,transactions=>transactions.account)
-    transactions:Transactions
+    transactions:Transactions[]
 }
 

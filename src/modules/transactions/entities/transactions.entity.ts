@@ -28,7 +28,7 @@ export class Transactions{
     @Column({
         type: "enum",
         enum: TRANSACTIONS_TYPE,
-        default:TRANSACTIONS_TYPE.TRANSFER
+        default:TRANSACTIONS_TYPE.TRANSFER,
     })
     transactionsType:TRANSACTIONS_TYPE;
 
@@ -49,7 +49,7 @@ export class Transactions{
     @Column({
         type:"enum",
         enum:STATUS,
-        default:STATUS.PENDING
+        default:STATUS.PENDING,
     })
     status: STATUS;
 

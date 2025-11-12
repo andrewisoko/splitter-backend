@@ -35,7 +35,7 @@ export class AccountsController {
     @UseGuards(AuthGuard('jwt'))
     @Post('find-all-accounts')
     async findAllAccounts(
-        @Body() findAllAccountsDto:{email:string; password: string; accountId: number}
+        @Body() findAllAccountsDto:{email:string; password: string}
     ){
         return this.accountService.findAllAccounts(findAllAccountsDto.email,
             findAllAccountsDto.password

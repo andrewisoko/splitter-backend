@@ -1,7 +1,8 @@
-import { Controller,Post,Body} from '@nestjs/common';
+import { Controller,Post,Body,Get, Param} from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UseGuards } from '@nestjs/common';
+import { TRANSACTIONS_TYPE } from './entities/transactions.entity';
 
 
 @Controller('transactions')
@@ -44,5 +45,13 @@ export class TransactionsController {
         )
     }
   
+    @Get(":id/:filter")
+    retrieveTransactionHistory(
+        @Param("id") id:number,
+        @Param("filter") type:TRANSACTIONS_TYPE
+    ){
+        return this.transactionsService.retrieveTransactionHistory(id,type)
+    }
+
 
 }

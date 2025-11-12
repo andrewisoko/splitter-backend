@@ -63,7 +63,7 @@ export class TransactionsService {
                     // Create transaction record
                     let transaction = this.
                     transactionOutcome.
-                    completedDataUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,accountAId,accountBId)
+                    transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,accountAId,accountBId)
 
 
                     
@@ -77,7 +77,7 @@ export class TransactionsService {
 
                     let transaction = this.
                     transactionOutcome.
-                    failedDataUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,accountAId,accountBId)
+                    transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.FAILED,accountAId,accountBId)
                    
                     transaction = await queryRunner.manager.save(transaction)
                     await queryRunner.commitTransaction();
@@ -110,16 +110,12 @@ export class TransactionsService {
                 await queryRunner.startTransaction();
                 
                 try {
-                    
-                    
-                    const account = queryRunner.manager.findOne(Account,{where:{accountID:accountId}})
-                    if (!account) throw new Error('account not found');
 
-                    this.accountsService.deposit(accountId,deposit)
+                    await this.accountsService.deposit(accountId,deposit)
                     
                     let transaction = this.
                     transactionOutcome.
-                    completedDataUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,accountId)
+                    transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.COMPLETED,accountId)
                     
                     await queryRunner.manager.save(transaction)
                     
@@ -131,7 +127,7 @@ export class TransactionsService {
                 } catch (error) {
                           let transaction = this.
                     transactionOutcome.
-                    failedDataUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,undefined,accountId)
+                    transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,accountId)
                    
                     transaction = await queryRunner.manager.save(transaction)
                     await queryRunner.commitTransaction();
@@ -164,15 +160,11 @@ export class TransactionsService {
                 await queryRunner.startTransaction();
                 
                 try {
-                    
-                    const account = queryRunner.manager.findOne(Account,{where:{accountID:accountId}})
-                    if (!account) throw new Error('account not found');
-
-                    this.accountsService.withdraw(accountId,withdraw)
+                    await this.accountsService.withdraw(accountId,withdraw)
 
                     let transaction = this.
                     transactionOutcome.
-                    completedDataUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,accountId)
+                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.COMPLETED,accountId)
 
                     transaction = await queryRunner.manager.save(transaction)
 
@@ -184,7 +176,7 @@ export class TransactionsService {
                 } catch (error) {
                           let transaction = this.
                     transactionOutcome.
-                    failedDataUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,accountId)
+                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,accountId)
                    
                     transaction = await queryRunner.manager.save(transaction)
                     await queryRunner.commitTransaction();
@@ -199,5 +191,15 @@ export class TransactionsService {
                 }
             }
 
-    
+            async retrieveTransactionHistory(accountId:number,type?:TRANSACTIONS_TYPE,status?:STATUS,dateRange?:Date){
+
+                 const account = await this.accountRepository.findOne({where:{accountID:accountId}})
+                if (!account) throw new Error('account not found');
+                
+                if(type !== undefined){
+                    return account.transactions
+                }
+                
+            }
+            
 }
