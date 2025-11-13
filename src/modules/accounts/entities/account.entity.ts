@@ -49,7 +49,11 @@ export class Account{
     @ManyToOne(()=>User,user=>user.accounts)
     user:User
 
-    @OneToMany(()=>Transactions,transactions=>transactions.account)
-    transactions:Transactions[]
+
+    @OneToMany(()=>Transactions,transactions=>transactions.sourceAccount)
+    outgoingTransactions:Transactions[]
+
+    @OneToMany(()=>Transactions,transactions=>transactions.deatinationAccount)
+    incomingTransactions:Transactions[]
 }
 

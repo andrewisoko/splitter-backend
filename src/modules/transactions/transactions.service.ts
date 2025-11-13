@@ -10,8 +10,19 @@ import { createDataSource } from '../data.source';
 import { ConfigService } from '@nestjs/config';
 import { TransactionsOutcome } from './transactions.outcome';
 import { Logger } from '@nestjs/common';
+import { GetTransactionsDto } from './dto/create_transactions.DTO';
 
 
+// type TransactionFilter = {
+// accountId?: number; 
+// dateFrom?: Date;
+// dateTo?: Date;
+// status?: string[];
+// types?: string[];
+// limit?: number;
+// offset?: number;
+// sort?: 'ASC' | 'DESC';
+// };
 
 
 
@@ -21,7 +32,7 @@ export class TransactionsService {
                 @InjectRepository(Account) private accountRepository:Repository<Account>,
                 private accountsService:AccountsService,
                 private configService:ConfigService,
-                private transactionOutcome:TransactionsOutcome
+                private transactionOutcome:TransactionsOutcome,
             ){}
 
             async transferFunds(accountAId: number, accountBId: number, amount: number){
@@ -47,8 +58,8 @@ export class TransactionsService {
                     const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId } });
                     const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId } });
 
-                    if (!accountA) throw new Error('Source account not found');
-                    if (!accountB) throw new Error('Destination account not found');
+                    if (!accountA) throw new NotFoundException('Source account not found');
+                    if (!accountB) throw new NotFoundException('Destination account not found');
                     if (accountA.balance < amount) throw new Error('Insufficient funds in source account');
 
                     accountA.balance -= amount;
@@ -191,15 +202,36 @@ export class TransactionsService {
                 }
             }
 
-            async retrieveTransactionHistory(accountId:number,type?:TRANSACTIONS_TYPE,status?:STATUS,dateRange?:Date){
+            async getTransactions(filters: GetTransactionsDto){
 
-                 const account = await this.accountRepository.findOne({where:{accountID:accountId}})
-                if (!account) throw new Error('account not found');
-                
-                if(type !== undefined){
-                    return account.transactions
+                const queBuilder = this.transactionsRepository.createQueryBuilder('t')
+                .leftJoinAndSelect('t.sourceAccount', 'src')
+                .leftJoinAndSelect('t.destinationAccount', 'dst')
+
+                if (filters.accountId) {
+                    queBuilder.andWhere('(t.sourceAccountID = :accId OR t.destinationAccountID = :accId)', { accId: filters.accountId });
                 }
+                if (filters.dateFrom) {
+                    queBuilder.andWhere('t.transactionDate >= :dateFrom', { dateFrom: filters.dateFrom });
+                }
+                if (filters.dateTo) {
+                queBuilder.andWhere('t.transactionDate <= :dateTo', { dateTo: filters.dateTo });
+                }
+                if (filters.types && filters.types.length > 0) {
+                queBuilder.andWhere('t.transactionsType IN (:...types)', { types: filters.types });
+                }
+                if (filters.status && filters.status.length > 0) {
+                queBuilder.andWhere('t.status IN (:...statuses)', { statuses: filters.status });
+                }
+
+                // Pagination
+                const limit = filters.limit ?? 50;
+                const offset = filters.offset ?? 0;
+                queBuilder.take(limit).skip(offset);
+
+                queBuilder.orderBy('t.transactionDate', filters.sort ?? 'DESC');
                 
+                return queBuilder.getMany();
             }
-            
+
 }

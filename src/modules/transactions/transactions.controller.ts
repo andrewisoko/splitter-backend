@@ -1,8 +1,9 @@
-import { Controller,Post,Body,Get, Param} from '@nestjs/common';
+import { Controller,Post,Body,Get, Query} from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UseGuards } from '@nestjs/common';
 import { TRANSACTIONS_TYPE } from './entities/transactions.entity';
+import { GetTransactionsDto } from './dto/create_transactions.DTO';
 
 
 @Controller('transactions')
@@ -11,7 +12,7 @@ export class TransactionsController {
 
 
     
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Post("create")
     transferFunds(
         @Body() TransferFundsDto:{accountAId: number, accountBId: number, amount: number}
@@ -23,7 +24,7 @@ export class TransactionsController {
         )
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Post("deposit")
     depositTransaction(
         @Body() DepositTransactionsDto:{accountId:number,deposit:number}
@@ -34,7 +35,7 @@ export class TransactionsController {
         )
     }
 
-    @UseGuards(AuthGuard('jwt'))
+    // @UseGuards(AuthGuard('jwt'))
     @Post("withdraw")
     withdrawTransaction(
         @Body() DepositTransactionsDto:{accountId:number,withdraw:number}
@@ -45,13 +46,11 @@ export class TransactionsController {
         )
     }
   
-    @Get(":id/:filter")
-    retrieveTransactionHistory(
-        @Param("id") id:number,
-        @Param("filter") type:TRANSACTIONS_TYPE
-    ){
-        return this.transactionsService.retrieveTransactionHistory(id,type)
+    @Get()
+    async getTransactions(
+    @Query() filters: GetTransactionsDto 
+    ) {
+            return this.transactionsService.getTransactions(filters);
     }
-
 
 }

@@ -1,6 +1,6 @@
 import { IsOptional } from "class-validator";
 import { Account } from "src/modules/accounts/entities/account.entity";
-import { Column, Entity, ManyToOne } from "typeorm";
+import { Column, Entity, ManyToOne,JoinColumn } from "typeorm";
 import { PrimaryGeneratedColumn } from "typeorm";
 
 
@@ -38,25 +38,30 @@ export class Transactions{
     @Column()
     transactionDate: Date;
 
-    @IsOptional()
-    @Column({ nullable: true })
-    sourceAccountID: number;
-
-    @IsOptional()
-    @Column({ nullable: true })
-    destinationAccountID:number;
-
+    
     @Column({
         type:"enum",
         enum:STATUS,
         default:STATUS.PENDING,
     })
     status: STATUS;
-
+    
     @Column()
     timeStamp:Date;  
-
-    @ManyToOne(()=>Account,account=>account.transactions)
-    account:Account
-
+    
+    @ManyToOne(()=>Account,account=>account.outgoingTransactions)
+    @JoinColumn({ name: 'sourceAccountID' })
+    sourceAccount:Account
+    
+    @IsOptional()
+    @Column({ nullable: true })
+    sourceAccountID: number;
+    
+    @ManyToOne(()=>Account,account=>account.incomingTransactions)
+    @JoinColumn({ name: 'destinationAccountID' })
+    deatinationAccount:Account
+    
+    @IsOptional()
+    @Column({ nullable: true })
+    destinationAccountID:number;
 }
