@@ -53,7 +53,7 @@ export class Account{
     @OneToMany(()=>Transactions,transactions=>transactions.sourceAccount)
     outgoingTransactions:Transactions[]
 
-    @OneToMany(()=>Transactions,transactions=>transactions.deatinationAccount)
+    @OneToMany(()=>Transactions,transactions=>transactions.destinationAccount)
     incomingTransactions:Transactions[]
 }
 

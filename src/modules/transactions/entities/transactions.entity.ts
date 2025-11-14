@@ -59,7 +59,7 @@ export class Transactions{
     
     @ManyToOne(()=>Account,account=>account.incomingTransactions)
     @JoinColumn({ name: 'destinationAccountID' })
-    deatinationAccount:Account
+    destinationAccount:Account
     
     @IsOptional()
     @Column({ nullable: true })

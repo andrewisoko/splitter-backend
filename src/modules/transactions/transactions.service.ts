@@ -13,16 +13,6 @@ import { Logger } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
 
 
-// type TransactionFilter = {
-// accountId?: number; 
-// dateFrom?: Date;
-// dateTo?: Date;
-// status?: string[];
-// types?: string[];
-// limit?: number;
-// offset?: number;
-// sort?: 'ASC' | 'DESC';
-// };
 
 
 
@@ -204,7 +194,7 @@ export class TransactionsService {
 
             async getTransactions(filters: GetTransactionsDto){
 
-                const queBuilder = this.transactionsRepository.createQueryBuilder('t')
+                const queBuilder = await this.transactionsRepository.createQueryBuilder('t')
                 .leftJoinAndSelect('t.sourceAccount', 'src')
                 .leftJoinAndSelect('t.destinationAccount', 'dst')
 
@@ -220,6 +210,7 @@ export class TransactionsService {
                 if (filters.types && filters.types.length > 0) {
                 queBuilder.andWhere('t.transactionsType IN (:...types)', { types: filters.types });
                 }
+
                 if (filters.status && filters.status.length > 0) {
                 queBuilder.andWhere('t.status IN (:...statuses)', { statuses: filters.status });
                 }
@@ -230,8 +221,8 @@ export class TransactionsService {
                 queBuilder.take(limit).skip(offset);
 
                 queBuilder.orderBy('t.transactionDate', filters.sort ?? 'DESC');
-                
+
+          
                 return queBuilder.getMany();
             }
-
 }

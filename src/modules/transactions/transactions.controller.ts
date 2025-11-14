@@ -46,11 +46,12 @@ export class TransactionsController {
         )
     }
   
+     // @UseGuards(AuthGuard('jwt'))
     @Get()
     async getTransactions(
     @Query() filters: GetTransactionsDto 
     ) {
-            return this.transactionsService.getTransactions(filters);
+            return await this.transactionsService.getTransactions(filters);
     }
 
 }
