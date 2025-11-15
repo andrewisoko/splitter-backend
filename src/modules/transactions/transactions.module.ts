@@ -14,6 +14,7 @@ import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { TransactionsOutcome } from './transactions.outcome';
+import { DataSourceConnection } from '../data.source';
 
 
 @Module({
@@ -30,6 +31,7 @@ import { TransactionsOutcome } from './transactions.outcome';
     AuthService,
     UsersService,
     JwtService,
+    DataSourceConnection,
     TransactionsOutcome
   ],
   controllers: [TransactionsController]

@@ -1,4 +1,4 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { STATUS, Transactions } from './entities/transactions.entity';
 import { Account } from '../accounts/entities/account.entity';
@@ -6,11 +6,10 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { TRANSACTIONS_TYPE } from './entities/transactions.entity';
 import { NotFoundException } from '@nestjs/common';
 import { AccountsService } from '../accounts/accounts.service';
-import { createDataSource } from '../data.source';
-import { ConfigService } from '@nestjs/config';
-import { TransactionsOutcome } from './transactions.outcome';
 import { Logger } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
+import { DataSourceConnection } from '../data.source';
+import { TransactionsOutcome } from './transactions.outcome';
 
 
 
@@ -19,25 +18,15 @@ import { GetTransactionsDto } from './dto/create_transactions.DTO';
 @Injectable()
 export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
-                @InjectRepository(Account) private accountRepository:Repository<Account>,
                 private accountsService:AccountsService,
-                private configService:ConfigService,
                 private transactionOutcome:TransactionsOutcome,
+                private dataSourceConnection: DataSourceConnection
             ){}
 
             async transferFunds(accountAId: number, accountBId: number, amount: number){
 
-                const AppDataSource = createDataSource(this.configService);
-    
-                await AppDataSource.initialize().
-                then(()=>
-                    console.log('Data Source has been initialised!')
-                )
-                .catch((err)=>
-                     console.error('Error during Data Source initialisation', err)
-                )
-                
-                const queryRunner = AppDataSource.createQueryRunner();
+  
+                const queryRunner = await this.dataSourceConnection.createDataSource()
                 
 
                 await queryRunner.connect();
@@ -95,17 +84,7 @@ export class TransactionsService {
 
             async depositTransaction(accountId:number,deposit:number){
 
-                const AppDataSource = createDataSource(this.configService);
-
-                await AppDataSource.initialize().
-                then(()=>
-                    console.log('Data Source has been initialised!')
-                )
-                .catch((err)=>
-                     console.error('Error during Data Source initialisation', err)
-                )
-                
-                const queryRunner = AppDataSource.createQueryRunner();
+                const queryRunner = await this.dataSourceConnection.createDataSource()
                 
                 await queryRunner.connect();
                 await queryRunner.startTransaction();
@@ -145,17 +124,7 @@ export class TransactionsService {
 
             async withdrawTransaction(accountId:number,withdraw:number){
 
-                const AppDataSource = createDataSource(this.configService);
-
-                await AppDataSource.initialize().
-                then(()=>
-                    console.log('Data Source has been initialised!')
-                )
-                .catch((err)=>
-                     console.error('Error during Data Source initialisation', err)
-                )
-                
-                const queryRunner = AppDataSource.createQueryRunner();
+              const queryRunner = await this.dataSourceConnection.createDataSource()
                 
                 await queryRunner.connect();
                 await queryRunner.startTransaction();
