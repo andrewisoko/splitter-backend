@@ -8,8 +8,8 @@ import { NotFoundException } from '@nestjs/common';
 import { AccountsService } from '../accounts/accounts.service';
 import { Logger } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
-import { DataSourceConnection } from '../data.source';
 import { TransactionsOutcome } from './transactions.outcome';
+import { DataSource } from 'typeorm';
 
 
 
@@ -20,14 +20,12 @@ export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
                 private accountsService:AccountsService,
                 private transactionOutcome:TransactionsOutcome,
-                private dataSourceConnection: DataSourceConnection
+                private dataSource: DataSource
             ){}
 
             async transferFunds(accountAId: number, accountBId: number, amount: number){
 
-  
-                const queryRunner = await this.dataSourceConnection.createDataSource()
-                
+                const queryRunner = this.dataSource.createQueryRunner();
 
                 await queryRunner.connect();
                 await queryRunner.startTransaction();
@@ -84,8 +82,7 @@ export class TransactionsService {
 
             async depositTransaction(accountId:number,deposit:number){
 
-                const queryRunner = await this.dataSourceConnection.createDataSource()
-                
+                const queryRunner = this.dataSource.createQueryRunner();
                 await queryRunner.connect();
                 await queryRunner.startTransaction();
                 
@@ -124,10 +121,10 @@ export class TransactionsService {
 
             async withdrawTransaction(accountId:number,withdraw:number){
 
-              const queryRunner = await this.dataSourceConnection.createDataSource()
+              const queryRunner = this.dataSource.createQueryRunner();
+              await queryRunner.connect();
+              await queryRunner.startTransaction();
                 
-                await queryRunner.connect();
-                await queryRunner.startTransaction();
                 
                 try {
                     await this.accountsService.withdraw(accountId,withdraw)
