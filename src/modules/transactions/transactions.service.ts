@@ -5,7 +5,6 @@ import { Account } from '../accounts/entities/account.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { TRANSACTIONS_TYPE } from './entities/transactions.entity';
 import { NotFoundException } from '@nestjs/common';
-import { AccountsService } from '../accounts/accounts.service';
 import { Logger } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
 import { TransactionsOutcome } from './transactions.outcome';
@@ -18,7 +17,6 @@ import { DataSource } from 'typeorm';
 @Injectable()
 export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
-                private accountsService:AccountsService,
                 private transactionOutcome:TransactionsOutcome,
                 private dataSource: DataSource
             ){}
@@ -32,8 +30,8 @@ export class TransactionsService {
 
                 try {
                     
-                    const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId } });
-                    const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId } });
+                    const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId }, lock:{mode:'pessimistic_write'} });
+                    const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId }, lock:{mode:'pessimistic_write'}  });
 
                     if (!accountA) throw new NotFoundException('Source account not found');
                     if (!accountB) throw new NotFoundException('Destination account not found');
@@ -63,16 +61,14 @@ export class TransactionsService {
                      return transaction;
                 } catch (error) {
 
+                    await queryRunner.rollbackTransaction();
                     let transaction = this.
                     transactionOutcome.
                     transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.FAILED,accountAId,accountBId)
                    
                     transaction = await queryRunner.manager.save(transaction)
-                    await queryRunner.commitTransaction();
-
                     Logger.log("Transaction Failed")
 
-                    await queryRunner.rollbackTransaction();
                     throw error;    
                 } finally {
                     await queryRunner.release();
@@ -87,8 +83,16 @@ export class TransactionsService {
                 await queryRunner.startTransaction();
                 
                 try {
+                    const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId }, lock:{mode:'pessimistic_write'} });
+               
+                    if (!account) throw new NotFoundException('Account not found');
+                    if(account.balance + deposit >= 12000) throw new Error('Maximum fund amount reached');
+                    if( account.balance >= 12000) throw new Error('Maximum fund amount reached');
 
-                    await this.accountsService.deposit(accountId,deposit)
+                    account.balance += deposit
+                    account.updatedAt = new Date()
+
+                    await queryRunner.manager.save(account);
                     
                     let transaction = this.
                     transactionOutcome.
@@ -102,16 +106,15 @@ export class TransactionsService {
                     return transaction;
     
                 } catch (error) {
-                          let transaction = this.
+
+                    await queryRunner.rollbackTransaction();
+                    let transaction = this.
                     transactionOutcome.
                     transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,accountId)
                    
                     transaction = await queryRunner.manager.save(transaction)
-                    await queryRunner.commitTransaction();
 
                     Logger.log("Transaction Failed")
-
-                    await queryRunner.rollbackTransaction();
                     throw error; 
 
                 } finally{
@@ -121,13 +124,22 @@ export class TransactionsService {
 
             async withdrawTransaction(accountId:number,withdraw:number){
 
-              const queryRunner = this.dataSource.createQueryRunner();
-              await queryRunner.connect();
-              await queryRunner.startTransaction();
-                
+                const queryRunner = this.dataSource.createQueryRunner();
+                await queryRunner.connect();
+                await queryRunner.startTransaction();
                 
                 try {
-                    await this.accountsService.withdraw(accountId,withdraw)
+
+                    const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId }, lock:{mode:'pessimistic_write'} });
+
+                    if (!account) throw new NotFoundException('Account not found');        
+                    if(account.balance < 0) throw new Error('invald amount');
+                    if(account.balance < withdraw) throw new Error('invald amount'); 
+                    
+                    account.balance -= withdraw
+                    account.updatedAt = new Date()
+
+                    queryRunner.manager.save(account)
 
                     let transaction = this.
                     transactionOutcome.
@@ -139,18 +151,17 @@ export class TransactionsService {
                     Logger.log("Transaction Completed!")
 
                     return transaction;
-    
-                } catch (error) {
-                          let transaction = this.
-                    transactionOutcome.
-                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,accountId)
-                   
-                    transaction = await queryRunner.manager.save(transaction)
-                    await queryRunner.commitTransaction();
 
-                    Logger.log("Transaction Failed")
+                } catch (error) {
 
                     await queryRunner.rollbackTransaction();
+                    let transaction = this.
+                    transactionOutcome.
+                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,accountId)
+                    
+                    transaction = await queryRunner.manager.save(transaction)
+                    Logger.log("Transaction Failed")
+
                     throw error; 
 
                 } finally{

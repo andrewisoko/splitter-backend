@@ -42,21 +42,4 @@ export class AccountsController {
         )
     }
 
-
-    @UseGuards(AuthGuard('jwt'))
-    @Post('deposit')
-    deposit(
-          @Body() depositAccountDto:{deposit:number,accountId: number}
-    ){
-        return this.accountService.deposit(depositAccountDto.accountId,depositAccountDto.deposit)
-    }
-
-    @UseGuards(AuthGuard('jwt'))
-    @Post('withdraw')
-    withdraw(
-       @Body() withdrawAccountDto:{withdraw:number,accountId: number}
-    ){
-        return this.accountService.withdraw(withdrawAccountDto.accountId,withdrawAccountDto.withdraw)
-    }
-
 }

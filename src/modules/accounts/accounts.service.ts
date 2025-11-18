@@ -83,36 +83,6 @@ export class AccountsService {
 
         return account
         }
-
-    async deposit(accountId:number,deposit:number):Promise<Account>{
-        const account = await this.accountRepository.findOne({where:{accountID: accountId}});
-
-        if (!account) throw new NotFoundException('Account not found');
-        if(account.balance + deposit >= 12000) throw new Error('Maximum fund amount reached');
-        if( account.balance >= 12000) throw new Error('Maximum fund amount reached');
-        
-        const balanceDeposit = deposit + account.balance
-        account.balance = balanceDeposit
-        account.updatedAt =  new Date()
-
-        return this.accountRepository.save(account)
-
-        }
-
-    async withdraw(accountId:number,withdraw:number):Promise<Account>{
-        const account = await this.accountRepository.findOneBy({ accountID: accountId });
-
-        if (!account) throw new NotFoundException('Account not found');        
-        if(account.balance < 0) throw new Error('invald amount');
-        if(account.balance < withdraw) throw new Error('invald amount');     
-
-        const balanceDeposit = account.balance - withdraw
-        account.balance = balanceDeposit
-        account.updatedAt =  new Date()
-        
-        return this.accountRepository.save(account)
-
-        }
     
     }
 
