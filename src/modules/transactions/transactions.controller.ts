@@ -12,7 +12,7 @@ export class TransactionsController {
 
 
     
-    // @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Post("create")
     transferFunds(
         @Body() TransferFundsDto:{accountAId: number, accountBId: number, amount: number}
@@ -24,7 +24,7 @@ export class TransactionsController {
         )
     }
 
-    // @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Post("deposit")
     depositTransaction(
         @Body() DepositTransactionsDto:{accountId:number,deposit:number}
@@ -35,14 +35,14 @@ export class TransactionsController {
         )
     }
 
-    // @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Post("withdraw")
     withdrawTransaction(
-        @Body() DepositTransactionsDto:{accountId:number,withdraw:number}
+        @Body() withdrawTransactionsDto:{accountId:number,withdraw:number}
     ){
         return this.transactionsService.withdrawTransaction(
-             DepositTransactionsDto.accountId,
-            DepositTransactionsDto.withdraw,
+             withdrawTransactionsDto.accountId,
+            withdrawTransactionsDto.withdraw,
         )
     }
   
