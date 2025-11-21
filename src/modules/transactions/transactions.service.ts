@@ -33,6 +33,7 @@ export class TransactionsService {
                     const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId }, lock:{mode:'pessimistic_write'} });
                     const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId }, lock:{mode:'pessimistic_write'}  });
 
+                    if (accountAId === accountBId) throw new Error("Invalid Transaction");
                     if (!accountA) throw new NotFoundException('Source account not found');
                     if (!accountB) throw new NotFoundException('Destination account not found');
                     if (accountA.balance < amount) throw new Error('Insufficient funds in source account');
