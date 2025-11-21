@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { STATUS, Transactions } from './entities/transactions.entity';
 import { Account } from '../accounts/entities/account.entity';
@@ -11,15 +11,13 @@ import { TransactionsOutcome } from './transactions.outcome';
 import { DataSource } from 'typeorm';
 
 
-
-
-
 @Injectable()
 export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
                 private transactionOutcome:TransactionsOutcome,
                 private dataSource: DataSource
             ){}
+
 
             async transferFunds(accountAId: number, accountBId: number, amount: number){
 
@@ -33,10 +31,10 @@ export class TransactionsService {
                     const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId }, lock:{mode:'pessimistic_write'} });
                     const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId }, lock:{mode:'pessimistic_write'}  });
 
-                    if (accountAId === accountBId) throw new Error("Invalid Transaction");
-                    if (!accountA) throw new NotFoundException('Source account not found');
-                    if (!accountB) throw new NotFoundException('Destination account not found');
-                    if (accountA.balance < amount) throw new Error('Insufficient funds in source account');
+                    if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
+                    if (!accountA) throw new Error('Source account not found');
+                    if (!accountB) throw new Error('Destination account not found');
+                    if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
 
                     accountA.balance -= amount;
                     accountB.balance += amount;
@@ -69,7 +67,7 @@ export class TransactionsService {
                    
                     transaction = await queryRunner.manager.save(transaction)
                     Logger.log("Transaction Failed")
-
+                   
                     throw error;    
                 } finally {
                     await queryRunner.release();

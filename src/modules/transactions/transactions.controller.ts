@@ -4,7 +4,9 @@ import { AuthGuard } from '@nestjs/passport';
 import { UseGuards } from '@nestjs/common';
 import { TRANSACTIONS_TYPE } from './entities/transactions.entity';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
-import { NotFoundError } from 'rxjs';
+import { UseFilters } from '@nestjs/common';
+import { ForeignKeyExceptionFilter } from '../../foreign-key-exception.filter';
+
 
 
 @Controller('transactions')
@@ -13,8 +15,9 @@ export class TransactionsController {
 
 
     
-    // @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Post("create")
+    @UseFilters(new ForeignKeyExceptionFilter())
     transferFunds(
         @Body() transferFundsDto:{accountAId: number, accountBId: number, amount: number}
     ){
@@ -28,8 +31,9 @@ export class TransactionsController {
         );
     }
 
-    // @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Post("deposit")
+    @UseFilters(new ForeignKeyExceptionFilter())
     depositTransaction(
         @Body() depositTransactionsDto:{accountId:number,deposit:number}
     ){
@@ -40,8 +44,9 @@ export class TransactionsController {
         )
     }
 
-    // @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuard('jwt'))
     @Post("withdraw")
+    @UseFilters(new ForeignKeyExceptionFilter())
     withdrawTransaction(
         @Body() withdrawTransactionsDto:{accountId:number,withdraw:number}
     ){
@@ -53,7 +58,7 @@ export class TransactionsController {
         )
     }
   
-     // @UseGuards(AuthGuard('jwt'))
+     @UseGuards(AuthGuard('jwt'))
     @Get()
     async getTransactions(
     @Query() filters: GetTransactionsDto 
