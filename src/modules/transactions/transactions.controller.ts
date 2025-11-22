@@ -2,10 +2,13 @@ import { Controller,Post,Body,Get, Query, NotFoundException} from '@nestjs/commo
 import { TransactionsService } from './transactions.service';
 import { AuthGuard } from '@nestjs/passport';
 import { UseGuards } from '@nestjs/common';
-import { TRANSACTIONS_TYPE } from './entities/transactions.entity';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
 import { UseFilters } from '@nestjs/common';
 import { ForeignKeyExceptionFilter } from '../../foreign-key-exception.filter';
+import { RolesGuard } from '../auth/auth_guard/roles.guard';
+import { Roles } from '../auth/auth_guard/roles.decorators';
+import { JwtAuthGuard } from '../auth/auth_guard/auth.guard';
+import { Role } from '../users/entities/user.entity';
 
 
 
@@ -14,7 +17,8 @@ export class TransactionsController {
     constructor(private transactionsService:TransactionsService){}
 
 
-    
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post("create")
     @UseFilters(new ForeignKeyExceptionFilter())
@@ -31,6 +35,8 @@ export class TransactionsController {
         );
     }
 
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post("deposit")
     @UseFilters(new ForeignKeyExceptionFilter())
@@ -44,6 +50,8 @@ export class TransactionsController {
         )
     }
 
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post("withdraw")
     @UseFilters(new ForeignKeyExceptionFilter())
@@ -57,8 +65,10 @@ export class TransactionsController {
             withdrawTransactionsDto.withdraw,
         )
     }
-  
-     @UseGuards(AuthGuard('jwt'))
+    
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN) 
+    @UseGuards(AuthGuard('jwt'))
     @Get()
     async getTransactions(
     @Query() filters: GetTransactionsDto 

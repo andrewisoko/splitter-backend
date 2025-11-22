@@ -22,7 +22,6 @@ import { TransactionsOutcome } from './transactions.outcome';
     ConfigModule,
     AccountsModule,
     TypeOrmModule.forFeature([Transactions,Account,User])
-
   ],
   providers: [
     TransactionsService,

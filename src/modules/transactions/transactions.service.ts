@@ -32,8 +32,8 @@ export class TransactionsService {
                     const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId }, lock:{mode:'pessimistic_write'}  });
 
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
-                    if (!accountA) throw new Error('Source account not found');
-                    if (!accountB) throw new Error('Destination account not found');
+                    if (!accountA) throw new NotFoundException('Source account not found');
+                    if (!accountB) throw new NotFoundException('Destination account not found');
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
 
                     accountA.balance -= amount;
@@ -85,8 +85,8 @@ export class TransactionsService {
                     const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId }, lock:{mode:'pessimistic_write'} });
                
                     if (!account) throw new NotFoundException('Account not found');
-                    if(account.balance + deposit >= 12000) throw new Error('Maximum fund amount reached');
-                    if( account.balance >= 12000) throw new Error('Maximum fund amount reached');
+                    if(account.balance + deposit >= 12000) throw new BadRequestException('Maximum fund amount reached');
+                    if( account.balance >= 12000) throw new BadRequestException('Maximum fund amount reached');
 
                     account.balance += deposit
                     account.updatedAt = new Date()
@@ -132,8 +132,8 @@ export class TransactionsService {
                     const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId }, lock:{mode:'pessimistic_write'} });
 
                     if (!account) throw new NotFoundException('Account not found');        
-                    if(account.balance < 0) throw new Error('invald amount');
-                    if(account.balance < withdraw) throw new Error('invald amount'); 
+                    if(account.balance <= 0) throw new BadRequestException('invald amount');
+                    if(account.balance < withdraw) throw new BadRequestException('invald amount'); 
                     
                     account.balance -= withdraw
                     account.updatedAt = new Date()
