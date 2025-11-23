@@ -13,8 +13,8 @@ export class AccountsController {
     constructor(private accountService:AccountsService,
     ){}
 
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post('create')
     createAccount(
@@ -26,8 +26,8 @@ export class AccountsController {
         )
     }
 
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post('retrieve-account')
     async retrieveAccount(
@@ -39,8 +39,8 @@ export class AccountsController {
         )
     }
 
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post('find-all-accounts')
     async findAllAccounts(

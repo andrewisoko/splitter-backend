@@ -35,8 +35,8 @@ export class TransactionsController {
         );
     }
 
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post("deposit")
     @UseFilters(new ForeignKeyExceptionFilter())
@@ -50,8 +50,8 @@ export class TransactionsController {
         )
     }
 
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Post("withdraw")
     @UseFilters(new ForeignKeyExceptionFilter())
@@ -66,8 +66,8 @@ export class TransactionsController {
         )
     }
     
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN) 
     @UseGuards(AuthGuard('jwt'))
     @Get()
     async getTransactions(

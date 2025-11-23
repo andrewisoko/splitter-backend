@@ -20,7 +20,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
         return {
           global: true,
           secret: configService.get<string>("JWT_KEY"),
-          signOptions: {expiresIn:'60s'}
+          signOptions: {expiresIn:'600s'}
         }
       }
     }), 
