@@ -9,6 +9,8 @@ import { Logger } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
 import { TransactionsOutcome } from './transactions.outcome';
 import { DataSource } from 'typeorm';
+import { User } from '../users/entities/user.entity';
+import { UnauthorizedException } from '@nestjs/common';
 
 
 @Injectable()
@@ -28,8 +30,8 @@ export class TransactionsService {
 
                 try {
                     
-                    const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId }, lock:{mode:'pessimistic_write'} });
-                    const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId }, lock:{mode:'pessimistic_write'}  });
+                    const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId },relations:["user"], lock:{mode:'pessimistic_write'} });
+                    const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId },relations:["user"], lock:{mode:'pessimistic_write'}  });
 
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
                     if (!accountA) throw new NotFoundException('Source account not found');
@@ -82,7 +84,7 @@ export class TransactionsService {
                 await queryRunner.startTransaction();
                 
                 try {
-                    const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId }, lock:{mode:'pessimistic_write'} });
+                    const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId },relations:["user"], lock:{mode:'pessimistic_write'} });
                
                     if (!account) throw new NotFoundException('Account not found');
                     if(account.balance + deposit >= 12000) throw new BadRequestException('Maximum fund amount reached');
@@ -121,24 +123,38 @@ export class TransactionsService {
                 }
             }
 
-            async withdrawTransaction(accountId:number,withdraw:number){
+            async withdrawTransaction(accountId:number,withdraw:number,userName:string){
 
                 const queryRunner = this.dataSource.createQueryRunner();
+
+                 let transactionFailed;
                 await queryRunner.connect();
                 await queryRunner.startTransaction();
                 
                 try {
 
-                    const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId }, lock:{mode:'pessimistic_write'} });
+                    const account = await queryRunner.manager.findOne(Account, {
+                        where: { accountID: accountId },
+                        lock:{mode:'pessimistic_write'} });
 
-                    if (!account) throw new NotFoundException('Account not found');        
-                    if(account.balance <= 0) throw new BadRequestException('invald amount');
+                    if (!account) throw new NotFoundException('Account not found');  
+                    const accountWithUser = await  queryRunner.manager.findOne(Account, {
+                    where: { accountID: accountId },
+                    relations: ['user']
+                    }); 
+                   
+                
+                    
+                    if (!accountWithUser) throw new  NotFoundException("account not found")
+                    
+                    if (accountWithUser.user.userName !== userName) throw new UnauthorizedException("You do not own this account");
+                    if(account.balance <= 0) throw new BadRequestException('Invald amount');
                     if(account.balance < withdraw) throw new BadRequestException('invald amount'); 
                     
                     account.balance -= withdraw
                     account.updatedAt = new Date()
 
-                    queryRunner.manager.save(account)
+                    await queryRunner.manager.save(account)
 
                     let transaction = this.
                     transactionOutcome.
@@ -154,17 +170,18 @@ export class TransactionsService {
                 } catch (error) {
 
                     await queryRunner.rollbackTransaction();
-                    let transaction = this.
+                    transactionFailed = this.
                     transactionOutcome.
                     transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,accountId)
-                    
-                    transaction = await queryRunner.manager.save(transaction)
-                    Logger.log("Transaction Failed")
-
+                    Logger.error('Error during withdrawTransaction:', error);
                     throw error; 
-
+                    
                 } finally{
                     await queryRunner.release();
+                    if (transactionFailed) {
+                        // await this.transactionsRepository.save(transactionFailed);
+                        Logger.log("Transaction Failed")
+                        }
                 }
             }
 

@@ -1,4 +1,4 @@
-import { Injectable,Logger,UnauthorizedException } from '@nestjs/common';
+import { Injectable,Logger,NotFoundException,UnauthorizedException } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -8,11 +8,13 @@ import { InjectRepository} from '@nestjs/typeorm';
 
 
 
+
+
 @Injectable()
 export class AuthService {
     constructor( private readonly userService:UsersService,
         private readonly jwtService:JwtService,
-        @InjectRepository(User) private userRepository:Repository<User>
+        @InjectRepository(User) private userRepository:Repository<User>,
     ){}
     
     async validateUser(email:string,password:string){
@@ -27,11 +29,13 @@ export class AuthService {
     }
 
     async login(user:User){
+
+
         const payload = { 
             sub : user.id,
             name: user.fullName,
             email: user.email,
-            role: user.role
+            role: user.role,
         }
         return {access_token: this.jwtService.sign(payload)}
     }

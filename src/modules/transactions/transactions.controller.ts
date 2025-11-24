@@ -8,7 +8,7 @@ import { ForeignKeyExceptionFilter } from '../../foreign-key-exception.filter';
 import { RolesGuard } from '../auth/auth_guard/roles.guard';
 import { Roles } from '../auth/auth_guard/roles.decorators';
 import { JwtAuthGuard } from '../auth/auth_guard/auth.guard';
-import { Role } from '../users/entities/user.entity';
+import { Role, User } from '../users/entities/user.entity';
 
 
 
@@ -18,8 +18,7 @@ export class TransactionsController {
 
 
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
-    @UseGuards(AuthGuard('jwt'))
+    @Roles(Role.ADMIN,Role.USER) 
     @Post("create")
     @UseFilters(new ForeignKeyExceptionFilter())
     transferFunds(
@@ -35,9 +34,8 @@ export class TransactionsController {
         );
     }
 
-    // @UseGuards(JwtAuthGuard,RolesGuard)
-    // @Roles(Role.ADMIN) 
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN,Role.USER) 
     @Post("deposit")
     @UseFilters(new ForeignKeyExceptionFilter())
     depositTransaction(
@@ -50,25 +48,24 @@ export class TransactionsController {
         )
     }
 
-    // @UseGuards(JwtAuthGuard,RolesGuard)
-    // @Roles(Role.ADMIN) 
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN,Role.USER) 
     @Post("withdraw")
     @UseFilters(new ForeignKeyExceptionFilter())
     withdrawTransaction(
-        @Body() withdrawTransactionsDto:{accountId:number,withdraw:number}
+        @Body() withdrawTransactionsDto:{accountId:number,withdraw:number,username:string}
     ){
         if (! withdrawTransactionsDto.accountId) throw new NotFoundException("Incorrect key declaration");
 
         return this.transactionsService.withdrawTransaction(
              withdrawTransactionsDto.accountId,
             withdrawTransactionsDto.withdraw,
+            withdrawTransactionsDto.username
         )
     }
     
-    // @UseGuards(JwtAuthGuard,RolesGuard)
-    // @Roles(Role.ADMIN) 
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN,Role.USER) 
     @Get()
     async getTransactions(
     @Query() filters: GetTransactionsDto 

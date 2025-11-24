@@ -20,19 +20,19 @@ export class User{
     })
     role:Role
 
-    @Column({nullable:true})
+    @Column()
         fullName:string;
 
-    @Column({nullable:true})
+    @Column()
         userName:string;
 
-    @Column({nullable:true})
+    @Column()
         number:number;
 
-    @Column({nullable:false})
+    @Column()
         email:string;
 
-    @Column({nullable:false})
+    @Column()
         password:string;    
         
     @OneToMany(() => Account,account => account.user)
