@@ -31,10 +31,10 @@ export class TransactionsService {
                 try {
                     
                     const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId },relations:["user"], lock:{mode:'pessimistic_write'} });
+                    if (!accountA) throw new NotFoundException('Source account not found');
                     const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId },relations:["user"], lock:{mode:'pessimistic_write'}  });
 
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
-                    if (!accountA) throw new NotFoundException('Source account not found');
                     if (!accountB) throw new NotFoundException('Destination account not found');
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
 
@@ -126,8 +126,8 @@ export class TransactionsService {
             async withdrawTransaction(accountId:number,withdraw:number,userName:string){
 
                 const queryRunner = this.dataSource.createQueryRunner();
+                let transactionFailed;
 
-                 let transactionFailed;
                 await queryRunner.connect();
                 await queryRunner.startTransaction();
                 
@@ -135,19 +135,19 @@ export class TransactionsService {
 
                     const account = await queryRunner.manager.findOne(Account, {
                         where: { accountID: accountId },
-                        lock:{mode:'pessimistic_write'} });
+                        lock:{mode:'pessimistic_write'}});
 
                     if (!account) throw new NotFoundException('Account not found');  
+         
+                    /** valid accoun't user process */
                     const accountWithUser = await  queryRunner.manager.findOne(Account, {
                     where: { accountID: accountId },
                     relations: ['user']
                     }); 
-                   
-                
-                    
                     if (!accountWithUser) throw new  NotFoundException("account not found")
-                    
                     if (accountWithUser.user.userName !== userName) throw new UnauthorizedException("You do not own this account");
+                    /**  until here  */
+
                     if(account.balance <= 0) throw new BadRequestException('Invald amount');
                     if(account.balance < withdraw) throw new BadRequestException('invald amount'); 
                     
