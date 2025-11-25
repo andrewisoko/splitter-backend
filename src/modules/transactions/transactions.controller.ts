@@ -1,4 +1,4 @@
-import { Controller,Post,Body,Get, Query, NotFoundException} from '@nestjs/common';
+import { Controller,Post,Body,Get, Query,Request, NotFoundException} from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
 import { UseGuards } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
@@ -7,7 +7,8 @@ import { ForeignKeyExceptionFilter } from '../../foreign-key-exception.filter';
 import { RolesGuard } from '../auth/auth_guard/roles.guard';
 import { Roles } from '../auth/auth_guard/roles.decorators';
 import { JwtAuthGuard } from '../auth/auth_guard/auth.guard';
-import { Role, User } from '../users/entities/user.entity';
+import { Role } from '../users/entities/user.entity';
+
 
 
 
@@ -20,16 +21,20 @@ export class TransactionsController {
     @Roles(Role.ADMIN,Role.USER) 
     @Post("create")
     @UseFilters(new ForeignKeyExceptionFilter())
+
     transferFunds(
-        @Body() transferFundsDto:{accountAId: number, accountBId: number, amount: number}
+        @Body() transferFundsDto:{accountAId: number, accountBId: number, amount: number, username?:string},
+        @Request() req
     ){
+        const {username} = req.user
         if (! transferFundsDto.accountAId) throw new NotFoundException("Incorrect key declaration");
         if (! transferFundsDto.accountBId) throw new NotFoundException("Incorrect key declaration");
 
         return this.transactionsService.transferFunds(
              transferFundsDto.accountAId,
             transferFundsDto.accountBId,
-            transferFundsDto.amount
+            transferFundsDto.amount,
+            username
         );
     }
 
@@ -37,29 +42,38 @@ export class TransactionsController {
     @Roles(Role.ADMIN,Role.USER) 
     @Post("deposit")
     @UseFilters(new ForeignKeyExceptionFilter())
+
     depositTransaction(
-        @Body() depositTransactionsDto:{accountId:number,deposit:number}
+        @Body() depositTransactionsDto:{accountId:number,deposit:number,username?:string},
+        @Request() req
     ){
+        const {username} = req.user
+
          if (! depositTransactionsDto.accountId) throw new NotFoundException("Incorrect key declaration")
+
         return this.transactionsService.depositTransaction(
-             depositTransactionsDto.accountId,
+            depositTransactionsDto.accountId,
             depositTransactionsDto.deposit,
+            username
         )
     }
 
-    // @UseGuards(JwtAuthGuard,RolesGuard)
-    // @Roles(Role.ADMIN,Role.USER) 
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN,Role.USER) 
     @Post("withdraw")
     @UseFilters(new ForeignKeyExceptionFilter())
     withdrawTransaction(
-        @Body() withdrawTransactionsDto:{accountId:number,withdraw:number,username:string}
-    ){
+        @Body() withdrawTransactionsDto:{accountId:number,withdraw:number,username?:string},
+        @Request() req
+
+    ){ 
+        const {username} = req.user
         if (! withdrawTransactionsDto.accountId) throw new NotFoundException("Incorrect key declaration");
 
         return this.transactionsService.withdrawTransaction(
-             withdrawTransactionsDto.accountId,
+            withdrawTransactionsDto.accountId,
             withdrawTransactionsDto.withdraw,
-            withdrawTransactionsDto.username
+            username
         )
     }
     

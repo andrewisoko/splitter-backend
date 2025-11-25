@@ -15,111 +15,90 @@ import { UnauthorizedException } from '@nestjs/common';
 @Injectable()
 export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
+                @InjectRepository(Account) private accountRepository:Repository<Account>,
                 private transactionOps:TransactionsOps,
                 private dataSource: DataSource
             ){}
 
 
-            async transferFunds(accountAId: number, accountBId: number, amount: number){
+            async transferFunds(accountAId: number, accountBId: number, amount: number, userNameA:string){
 
-                const queryRunner = this.dataSource.createQueryRunner();
-
-                await queryRunner.connect();
-                await queryRunner.startTransaction();
+                let transactionFailed;
+                let transaction;
+                let accountA;
+                let accountB;
 
                 try {
-                    
-                    const accountA = await queryRunner.manager.findOne(Account, { where: { accountID: accountAId },relations:["user"], lock:{mode:'pessimistic_write'} });
-                    if (!accountA) throw new NotFoundException('Source account not found');
-                    const accountB = await queryRunner.manager.findOne(Account, { where: { accountID: accountBId },relations:["user"], lock:{mode:'pessimistic_write'}  });
+
+                    accountA = await this.transactionOps.account(accountAId);
+                    accountB = await this.transactionOps.account(accountBId);
 
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
-                    if (!accountB) throw new NotFoundException('Destination account not found');
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
+                    if (accountA.user.userName !== userNameA) throw new UnauthorizedException("You do not own this account");
 
-                    accountA.balance -= amount;
-                    accountB.balance += amount;
+                    await this.accountRepository.decrement({ accountID:accountAId },'balance', amount);
+                    await this.accountRepository.increment({ accountID:accountBId },'balance', amount);
 
                     accountA.updatedAt = new Date()
                     accountB.updatedAt = new Date()
 
-                    await queryRunner.manager.save(accountA);
-                    await queryRunner.manager.save(accountB);
+                    transaction = this.
+                    transactionOps.transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,accountAId,accountBId)
 
-                    // Create transaction record
-                    let transaction = this.
-                    transactionOps.
-                    transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,accountAId,accountBId)
+                    await this.transactionOps.queryRunner(transaction,accountA,accountB)
 
-
+                    return transaction
                     
-                    await queryRunner.manager.save(transaction)
-                    
-                    await queryRunner.commitTransaction();
-                    Logger.log("Transaction Completed!")
-
-                     return transaction;
                 } catch (error) {
-
-                    await queryRunner.rollbackTransaction();
-                    let transaction = this.
+                    transactionFailed = this.
                     transactionOps.
-                    transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.FAILED,accountAId,accountBId)
-                   
-                    transaction = await queryRunner.manager.save(transaction)
-                    Logger.log("Transaction Failed")
-                   
-                    throw error;    
-                } finally {
-                    await queryRunner.release();
+                    transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.FAILED,accountAId,accountBId);
+                    throw error;  
+                    
+                }finally{
+                    await this.transactionOps.transactionFailed(transactionFailed)
                 }
-
             }
-
-            async depositTransaction(accountId:number,deposit:number){
-
-                const queryRunner = this.dataSource.createQueryRunner();
-                await queryRunner.connect();
-                await queryRunner.startTransaction();
+         
+            
+            async depositTransaction(accountId:number,deposit:number,userName:string){
+                
+                let transactionFailed;
+                let transaction;
+                let account;
                 
                 try {
-                    const account = await queryRunner.manager.findOne(Account, { where: { accountID: accountId },relations:["user"], lock:{mode:'pessimistic_write'} });
-               
+                    
+                    account = await this.transactionOps.account(accountId);
+                    
+                    if (account.user.userName !== userName) throw new UnauthorizedException("You do not own this account");
                     if (!account) throw new NotFoundException('Account not found');
                     if(account.balance + deposit >= 12000) throw new BadRequestException('Maximum fund amount reached');
                     if( account.balance >= 12000) throw new BadRequestException('Maximum fund amount reached');
-
-                    account.balance += deposit
+                    
+                    
+                    await this.accountRepository.increment({ accountID:accountId },'balance',deposit);
                     account.updatedAt = new Date()
 
-                    await queryRunner.manager.save(account);
-                    
-                    let transaction = this.
+                    transaction = this.
                     transactionOps.
                     transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.COMPLETED,accountId)
-                    
-                    await queryRunner.manager.save(transaction)
-                    
-                    await queryRunner.commitTransaction();
-                    Logger.log("Transaction Completed!")
 
-                    return transaction;
-    
+                    await this.transactionOps.queryRunner(transaction,account)
+
+                    return transaction
+                    
                 } catch (error) {
-
-                    await queryRunner.rollbackTransaction();
-                    let transaction = this.
+                    transactionFailed = this.
                     transactionOps.
-                    transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,accountId)
-                   
-                    transaction = await queryRunner.manager.save(transaction)
-
-                    Logger.log("Transaction Failed")
-                    throw error; 
-
-                } finally{
-                    await queryRunner.release();
+                    transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,accountId);
+                    throw error;  
                 }
+                finally{
+                    await this.transactionOps.transactionFailed(transactionFailed)
+                }
+              
             }
 
             async withdrawTransaction(accountId:number,withdraw:number,userName:string){
@@ -136,14 +115,14 @@ export class TransactionsService {
                     if(account.balance <= 0) throw new BadRequestException('Invald amount');
                     if(account.balance < withdraw) throw new BadRequestException('invald amount'); 
                     
-                    account.balance -= withdraw
+                    await this.accountRepository.decrement({ accountID:accountId },'balance',withdraw);
                     account.updatedAt = new Date()
 
                     transaction = this.
                     transactionOps.
                     transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.COMPLETED,accountId)
 
-                    await this.transactionOps.queryRunner(account,transaction)
+                    await this.transactionOps.queryRunner(transaction,account)
 
                     return transaction
                     

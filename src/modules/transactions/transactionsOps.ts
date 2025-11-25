@@ -36,7 +36,7 @@ export class TransactionsOps{
         }
     }
 
-    async queryRunner(account:Account,transaction:any){
+    async queryRunner(transaction:any,accountA:Account,accountB?:Account){
         
         const queryRunner = this.dataSource.createQueryRunner();
         try{
@@ -44,12 +44,16 @@ export class TransactionsOps{
             await queryRunner.connect();
             await queryRunner.startTransaction();
     
-            await queryRunner.manager.save(account)
+            await queryRunner.manager.save(accountA)
+
+            if (typeof(accountB) !== "undefined") {
+              await queryRunner.manager.save(accountB)
+             }
+             
             await queryRunner.manager.save(transaction)
             await queryRunner.commitTransaction()
-            await queryRunner.release()
             return Logger.log("Transaction Completed!")
-            
+
         }catch(error){
         await queryRunner.rollbackTransaction();
         throw error;
