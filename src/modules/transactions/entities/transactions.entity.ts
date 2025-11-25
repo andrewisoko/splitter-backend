@@ -4,6 +4,7 @@ import { Column, Entity, ManyToOne,JoinColumn } from "typeorm";
 import { PrimaryGeneratedColumn } from "typeorm";
 
 
+
 export enum TRANSACTIONS_TYPE {
     DEPOSIT = "deposit",
     WITHDRAW = "withdraw",

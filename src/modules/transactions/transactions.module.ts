@@ -13,7 +13,7 @@ import { AuthModule } from '../auth/auth.module';
 import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
-import { TransactionsOutcome } from './transactions.outcome';
+import { TransactionsOps } from './transactionsOps';
 
 
 
@@ -30,7 +30,7 @@ import { TransactionsOutcome } from './transactions.outcome';
     AuthService,
     UsersService,
     JwtService,
-    TransactionsOutcome
+    TransactionsOps
   ],
   controllers: [TransactionsController]
 })

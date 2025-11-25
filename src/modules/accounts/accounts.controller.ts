@@ -1,12 +1,11 @@
 import { Controller,Post,Body,Request, NotFoundException} from '@nestjs/common';
 import { AccountsService } from './accounts.service';
-import { AuthGuard } from '@nestjs/passport';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/auth_guard/roles.guard';
 import { Roles } from '../auth/auth_guard/roles.decorators';
 import { JwtAuthGuard } from '../auth/auth_guard/auth.guard';
-import { Role, User } from '../users/entities/user.entity';
-import { NotFoundError } from 'rxjs';
+import { Role } from '../users/entities/user.entity';
+
 
 
 

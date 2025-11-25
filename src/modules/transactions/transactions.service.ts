@@ -7,16 +7,15 @@ import { TRANSACTIONS_TYPE } from './entities/transactions.entity';
 import { NotFoundException } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
-import { TransactionsOutcome } from './transactions.outcome';
+import { TransactionsOps } from './transactionsOps';
 import { DataSource } from 'typeorm';
-import { User } from '../users/entities/user.entity';
 import { UnauthorizedException } from '@nestjs/common';
 
 
 @Injectable()
 export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
-                private transactionOutcome:TransactionsOutcome,
+                private transactionOps:TransactionsOps,
                 private dataSource: DataSource
             ){}
 
@@ -49,7 +48,7 @@ export class TransactionsService {
 
                     // Create transaction record
                     let transaction = this.
-                    transactionOutcome.
+                    transactionOps.
                     transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,accountAId,accountBId)
 
 
@@ -64,7 +63,7 @@ export class TransactionsService {
 
                     await queryRunner.rollbackTransaction();
                     let transaction = this.
-                    transactionOutcome.
+                    transactionOps.
                     transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.FAILED,accountAId,accountBId)
                    
                     transaction = await queryRunner.manager.save(transaction)
@@ -96,7 +95,7 @@ export class TransactionsService {
                     await queryRunner.manager.save(account);
                     
                     let transaction = this.
-                    transactionOutcome.
+                    transactionOps.
                     transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.COMPLETED,accountId)
                     
                     await queryRunner.manager.save(transaction)
@@ -110,7 +109,7 @@ export class TransactionsService {
 
                     await queryRunner.rollbackTransaction();
                     let transaction = this.
-                    transactionOutcome.
+                    transactionOps.
                     transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,accountId)
                    
                     transaction = await queryRunner.manager.save(transaction)
@@ -125,63 +124,37 @@ export class TransactionsService {
 
             async withdrawTransaction(accountId:number,withdraw:number,userName:string){
 
-                const queryRunner = this.dataSource.createQueryRunner();
                 let transactionFailed;
-
-                await queryRunner.connect();
-                await queryRunner.startTransaction();
+                let transaction;
+                let account;
                 
                 try {
+                    
+                    account = await this.transactionOps.account(accountId);
 
-                    const account = await queryRunner.manager.findOne(Account, {
-                        where: { accountID: accountId },
-                        lock:{mode:'pessimistic_write'}});
-
-                    if (!account) throw new NotFoundException('Account not found');  
-         
-                    /** valid accoun't user process */
-                    const accountWithUser = await  queryRunner.manager.findOne(Account, {
-                    where: { accountID: accountId },
-                    relations: ['user']
-                    }); 
-                    if (!accountWithUser) throw new  NotFoundException("account not found")
-                    if (accountWithUser.user.userName !== userName) throw new UnauthorizedException("You do not own this account");
-                    /**  until here  */
-
+                    if (account.user.userName !== userName) throw new UnauthorizedException("You do not own this account");
                     if(account.balance <= 0) throw new BadRequestException('Invald amount');
                     if(account.balance < withdraw) throw new BadRequestException('invald amount'); 
                     
                     account.balance -= withdraw
                     account.updatedAt = new Date()
 
-                    await queryRunner.manager.save(account)
-
-                    let transaction = this.
-                    transactionOutcome.
+                    transaction = this.
+                    transactionOps.
                     transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.COMPLETED,accountId)
 
-                    transaction = await queryRunner.manager.save(transaction)
+                    await this.transactionOps.queryRunner(account,transaction)
 
-                    await queryRunner.commitTransaction();
-                    Logger.log("Transaction Completed!")
-
-                    return transaction;
-
-                } catch (error) {
-
-                    await queryRunner.rollbackTransaction();
-                    transactionFailed = this.
-                    transactionOutcome.
-                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,accountId)
-                    Logger.error('Error during withdrawTransaction:', error);
-                    throw error; 
+                    return transaction
                     
-                } finally{
-                    await queryRunner.release();
-                    if (transactionFailed) {
-                        // await this.transactionsRepository.save(transactionFailed);
-                        Logger.log("Transaction Failed")
-                        }
+                } catch (error) {
+                    transactionFailed = this.
+                    transactionOps.
+                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,accountId);
+                    throw error;  
+                }
+                finally{
+                    await this.transactionOps.transactionFailed(transactionFailed)
                 }
             }
 

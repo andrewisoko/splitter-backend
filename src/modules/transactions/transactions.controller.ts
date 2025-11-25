@@ -1,6 +1,5 @@
 import { Controller,Post,Body,Get, Query, NotFoundException} from '@nestjs/common';
 import { TransactionsService } from './transactions.service';
-import { AuthGuard } from '@nestjs/passport';
 import { UseGuards } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
 import { UseFilters } from '@nestjs/common';
@@ -48,8 +47,8 @@ export class TransactionsController {
         )
     }
 
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN,Role.USER) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN,Role.USER) 
     @Post("withdraw")
     @UseFilters(new ForeignKeyExceptionFilter())
     withdrawTransaction(

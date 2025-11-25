@@ -1,4 +1,4 @@
-import { Body, Controller, Get, ParseIntPipe,Param, Patch, Delete } from '@nestjs/common';
+import { Body, Controller, Get, ParseIntPipe,Param, Patch, Delete,Request, UnauthorizedException} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { User,Role } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -20,20 +20,28 @@ export class UsersController {
     }
 
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN)
+    @Roles(Role.ADMIN,Role.USER)
     @Delete(':id')
-       deleteUser(@Param('id',ParseIntPipe) id:number){
-        return this.usersService.deleteUser(id) 
+       deleteUser(
+        @Param('id',ParseIntPipe) idUser:number,
+        @Request() req
+    ){
+        const {id} = req.user
+        if(idUser != id) throw new UnauthorizedException("id not belonging to account")
+        return this.usersService.deleteUser(idUser) 
     }
  
     @UseGuards(JwtAuthGuard,RolesGuard)  
-    @Roles(Role.USER)
+    @Roles(Role.ADMIN,Role.USER)
     @Patch(':id')
     updateUser(
-        @Param('id',ParseIntPipe) id:number,
+        @Param('id',ParseIntPipe) idUser:number,
+        @Request() req,
         @Body() data: UpdateUserDto,
     ):Promise<User>{
-        return this.usersService.updateUser(id,data)
+        const {id} = req.user
+        if(idUser != id) throw new UnauthorizedException("id not belonging to account")
+        return this.usersService.updateUser(idUser,data)
     }
  
 }
