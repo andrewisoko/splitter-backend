@@ -21,7 +21,7 @@ export class TransactionsService {
             ){}
 
 
-            async transferFunds(accountAId: number, accountBId: number, amount: number, userNameA:string){
+            async transferFunds(accountAId: number, accountBId: number, amount: number, username:string){
 
                 let transactionFailed;
                 let transaction;
@@ -29,16 +29,22 @@ export class TransactionsService {
                 let accountB;
 
                 try {
-
                     accountA = await this.transactionOps.account(accountAId);
                     accountB = await this.transactionOps.account(accountBId);
-
+                    
+        
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
-                    if (accountA.user.userName !== userNameA) throw new UnauthorizedException("You do not own this account");
+                    if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
+                    
+
 
                     await this.accountRepository.decrement({ accountID:accountAId },'balance', amount);
                     await this.accountRepository.increment({ accountID:accountBId },'balance', amount);
+
+                    /* Re-fetch accounts to get their updated balances*/
+                    accountA = await this.transactionOps.account(accountAId);
+                    accountB = await this.transactionOps.account(accountBId);
 
                     accountA.updatedAt = new Date()
                     accountB.updatedAt = new Date()
@@ -79,13 +85,15 @@ export class TransactionsService {
                     
                     
                     await this.accountRepository.increment({ accountID:accountId },'balance',deposit);
+                    account = await this.transactionOps.account(accountId);
+                    
                     account.updatedAt = new Date()
 
                     transaction = this.
                     transactionOps.
                     transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.COMPLETED,accountId)
 
-                    await this.transactionOps.queryRunner(transaction,account)
+                    await this.transactionOps.queryRunner(transaction,account);
 
                     return transaction
                     
@@ -116,13 +124,14 @@ export class TransactionsService {
                     if(account.balance < withdraw) throw new BadRequestException('invald amount'); 
                     
                     await this.accountRepository.decrement({ accountID:accountId },'balance',withdraw);
+                    account = await this.transactionOps.account(accountId);
                     account.updatedAt = new Date()
 
                     transaction = this.
                     transactionOps.
-                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.COMPLETED,accountId)
+                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.COMPLETED,accountId);
 
-                    await this.transactionOps.queryRunner(transaction,account)
+                    await this.transactionOps.queryRunner(transaction,account);
 
                     return transaction
                     

@@ -30,7 +30,7 @@ export class AccountsService {
 
     }
 
-    async createAccount(username:string,currency:string,balance:number):Promise<Account>{ 
+    async createAccount(currency:string,balance:number,username:string):Promise<Account>{ 
         const user = await this.userRepository.findOneBy({ userName: username });
         if(!user) throw new NotFoundException("user not found")
         if(balance < 25) throw new Error("Insufficent balance")
@@ -51,7 +51,7 @@ export class AccountsService {
         return this.accountRepository.save(userAccount)
     }
 
-    async findAllAccounts(email: string, password: string): Promise<Account[]> {
+    async findAllAccounts(password:string,email: string): Promise<Account[]> {
 
         const validUser = await this.authService.validateUser(email, password);
         if (!validUser) {
@@ -70,7 +70,7 @@ export class AccountsService {
         }
 
 
-    async retrieveAccount(email: string, password: string, accountId: number):Promise<Account> {
+    async retrieveAccount(password: string, accountId: number, email:string ):Promise<Account> {
 
 
         const validUser = await this.authService.validateUser(email, password);

@@ -27,21 +27,33 @@ export class UsersController {
         @Request() req
     ){
         const {id} = req.user
+        if(req.user.role === Role.ADMIN){
+            // return this.usersService.deleteUser(idUser) 
+            return "User Succesfully deleted"
+        };
+
         if(idUser != id) throw new UnauthorizedException("id not belonging to account")
-        return this.usersService.deleteUser(idUser) 
+            return "User Succesfully deleted"
+        // return this.usersService.deleteUser(idUser) 
     }
  
     @UseGuards(JwtAuthGuard,RolesGuard)  
     @Roles(Role.ADMIN,Role.USER)
     @Patch(':id')
+
     updateUser(
         @Param('id',ParseIntPipe) idUser:number,
         @Request() req,
         @Body() data: UpdateUserDto,
     ):Promise<User>{
         const {id} = req.user
-        if(idUser != id) throw new UnauthorizedException("id not belonging to account")
-        return this.usersService.updateUser(idUser,data)
+
+        if(req.user.role === Role.ADMIN){
+          return this.usersService.updateUser(idUser,data)  
+        }
+
+        if(idUser != id) throw new UnauthorizedException("id not belonging to account");
+        return this.usersService.updateUser(idUser,data);
     }
  
 }
