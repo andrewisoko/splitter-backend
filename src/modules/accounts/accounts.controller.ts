@@ -5,6 +5,7 @@ import { RolesGuard } from '../auth/auth_guard/roles.guard';
 import { Roles } from '../auth/auth_guard/roles.decorators';
 import { JwtAuthGuard } from '../auth/auth_guard/auth.guard';
 import { Role } from '../users/entities/user.entity';
+import { Logger } from '@nestjs/common';
 
 
 
@@ -87,6 +88,31 @@ export class AccountsController {
             findAllAccountsDto.password,
             email
         )
+    }
+
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN,Role.USER) 
+    @Post('delete')
+
+    async deleteAccount(
+        @Body() deleteAccountDto:{accountId:number,username?:string},
+        @Request() req
+    ){
+        const {username} = req.user;
+
+        if (req.user.role === Role.ADMIN){
+            if(!deleteAccountDto.username) throw new NotFoundException("username not found");
+            return this.accountService.deleteAccount(
+                deleteAccountDto.accountId,
+                deleteAccountDto.username
+            );
+        
+        }
+        return this.accountService.deleteAccount(
+            deleteAccountDto.accountId,
+            username
+        )
+
     }
 
 }

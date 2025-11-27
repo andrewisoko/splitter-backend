@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Account, AccountStatus } from './entities/account.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from '../auth/auth.service';
+import { Logger } from '@nestjs/common';
 
 
 @Injectable()
@@ -83,6 +84,40 @@ export class AccountsService {
 
         return account
         }
+
+        async deleteAccount(accountId:number, username:string){
+
+            const account = await this.accountRepository.findOne
+            ({where:{accountID:accountId},
+              relations:["user"]})
+            if (!account) throw new NotFoundException("account not found");
+
+            
+            if (account.user.userName !== username) throw new UnauthorizedException("You do not own this account");
+            if(account.balance > 0) throw new UnauthorizedException("Balance must be zero for account to be deleted.");
+            if (account.status === "Pending") throw new UnauthorizedException("Account still pending.");
+            
+            const pendingTransaction = await this.accountRepository.createQueryBuilder("acc")
+                                        .leftJoin('acc.outgoingTransactions', 'txOut')
+                                        .leftJoin('acc.incomingTransactions', 'txIn')
+                                        .select([
+                                            "acc.accountID",
+                                            "txOut.status",
+                                            "txIn.status"
+                                        ])
+                                        .where("acc.accountID = :accountId",{accountId})
+                                        .andWhere('(txOut.status = :status OR txIn.status = :status)', { status: 'pending' })
+                                        .getOne()
+            
+
+            if(pendingTransaction) throw new UnauthorizedException("transaction still pending.");
+            return this.accountRepository.delete(account)
+          
+            
+            
+
+        }
+
     
     }
 
