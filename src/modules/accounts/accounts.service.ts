@@ -1,4 +1,4 @@
-import {  Injectable, NotFoundException,UnauthorizedException } from '@nestjs/common';
+import {  ForbiddenException, Injectable, NotFoundException,UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Account, AccountStatus } from './entities/account.entity';
@@ -14,21 +14,27 @@ export class AccountsService {
                 private authService:AuthService,
     ){}
 
-    accountNumberGenerator():number{ 
+    async accountNumberGenerator():Promise<number>{ 
 
-        let randomNumList:Array<number> = []
-        let num: number = 0
-        let randomNumber:() => number = () => Math.floor(Math.random()*10)
+        let accountNumber:number = 10123456;
+        let accountDB = await this.accountRepository.find({select:['accountNumber']})
 
-        while (num < 8){
-        randomNumList.push(randomNumber())
-        num ++
-        }
-        let ranNumString:string = randomNumList.join("")
-        let eightSequence = Number(ranNumString)
+        const accountNumbers: number[] = accountDB.map(acc => acc.accountNumber);
 
-        return eightSequence
+        if (accountNumbers.includes(accountNumber)){};
+        accountNumbers.push(accountNumber)
 
+        
+        if (accountNumbers[accountNumbers.length -1] >= 99999999){
+            accountNumbers.pop();
+            Logger.log("exceeded account numbers.")  
+            } 
+
+        accountNumber = accountNumbers[accountNumbers.length -1] + 1
+        accountNumbers.push(accountNumber)
+         
+        return accountNumber
+        
     }
 
     async createAccount(currency:string,balance:number,username:string):Promise<Account>{ 
@@ -36,7 +42,8 @@ export class AccountsService {
         if(!user) throw new NotFoundException("user not found")
         if(balance < 25) throw new Error("Insufficent balance")
 
-        const accNumber = this.accountNumberGenerator()
+        const accNumber = await this.accountNumberGenerator()
+
         const userAccount = await this.accountRepository.create({
 
             accountNumber:accNumber,
@@ -85,7 +92,7 @@ export class AccountsService {
         return account
         }
 
-        async deleteAccount(accountId:number, username:string){
+        async deleteAccount(accountId:number, password:string, username:string){
 
             const account = await this.accountRepository.findOne
             ({where:{accountID:accountId},

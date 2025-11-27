@@ -17,8 +17,8 @@ export class AccountsController {
 
     @UseGuards(JwtAuthGuard,RolesGuard)
     @Roles(Role.ADMIN,Role.USER) 
-    @Post('create')
 
+    @Post('create')
     createAccount(
         @Body() createAccountDto:{ currency:string; initialDeposit:number, username?:string; },
         @Request() req
@@ -95,21 +95,24 @@ export class AccountsController {
     @Post('delete')
 
     async deleteAccount(
-        @Body() deleteAccountDto:{accountId:number,username?:string},
+        @Body() deleteAccountDto:{accountId:number,password:string,username?:string},
         @Request() req
     ){
         const {username} = req.user;
 
         if (req.user.role === Role.ADMIN){
+
             if(!deleteAccountDto.username) throw new NotFoundException("username not found");
             return this.accountService.deleteAccount(
                 deleteAccountDto.accountId,
+                deleteAccountDto.password,
                 deleteAccountDto.username
             );
         
         }
         return this.accountService.deleteAccount(
             deleteAccountDto.accountId,
+            deleteAccountDto.password,
             username
         )
 
