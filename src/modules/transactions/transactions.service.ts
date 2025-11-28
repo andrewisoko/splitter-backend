@@ -10,6 +10,9 @@ import { GetTransactionsDto } from './dto/create_transactions.DTO';
 import { TransactionsOps } from './transactionsOps';
 import { DataSource } from 'typeorm';
 import { UnauthorizedException } from '@nestjs/common';
+import { ConversionCurrencies } from './currency-conversion';
+
+
 
 
 @Injectable()
@@ -17,7 +20,8 @@ export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
                 @InjectRepository(Account) private accountRepository:Repository<Account>,
                 private transactionOps:TransactionsOps,
-                private dataSource: DataSource
+                private dataSource: DataSource,
+                private conv:ConversionCurrencies
             ){}
 
 
@@ -175,6 +179,9 @@ export class TransactionsService {
                 queBuilder.take(limit).skip(offset);
 
                 queBuilder.orderBy('t.transactionDate', filters.sort ?? 'DESC');
+
+                const conda = this.conv.oandaClient()
+                // Logger.log(this.conv.oandaGetCurrencies(conda))
 
           
                 return queBuilder.getMany();

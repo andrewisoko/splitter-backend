@@ -8,12 +8,14 @@ import { NotFoundException } from "@nestjs/common";
 import { DataSource } from "typeorm";
 
 
+
 @Injectable()
 export class TransactionsOps{
 
     constructor(@InjectRepository(Account) private accountRepository:Repository<Account>,
                 @InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
-                private dataSource: DataSource
+                private dataSource: DataSource,
+            
 
 ){}
     
@@ -85,5 +87,6 @@ export class TransactionsOps{
         
         return transaction
     }
+    
 }
 

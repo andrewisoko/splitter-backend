@@ -14,6 +14,7 @@ import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { TransactionsOps } from './transactionsOps';
+import { ConversionCurrencies } from './currency-conversion';
 
 
 
@@ -30,7 +31,8 @@ import { TransactionsOps } from './transactionsOps';
     AuthService,
     UsersService,
     JwtService,
-    TransactionsOps
+    TransactionsOps,
+    ConversionCurrencies
   ],
   controllers: [TransactionsController]
 })
