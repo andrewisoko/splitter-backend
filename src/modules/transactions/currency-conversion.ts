@@ -31,5 +31,38 @@ export class ConversionCurrencies {
         });
     }
 
+    async convertAmount(amount: number, fromCurrency: string, toCurrency: string): Promise<number> {
+        const client = this.oandaClient();
+        
+        return new Promise((resolve, reject) => {
+            client.convert(fromCurrency, toCurrency, amount, (response) => {
+                if (response.success) {
+                    Logger.log(`Converted ${amount} ${fromCurrency} to ${response.data.amount} ${toCurrency}`);
+                    resolve(response.data.amount);
+                } else {
+                    Logger.error(`Conversion failed: ${response.errorCode} - ${response.errorMessage}`);
+                    reject(new NotFoundException(`Currency conversion failed: ${response.errorMessage}`));
+                }
+            });
+        });
+    }
+
+        async processTransaction(senderAmount: number, fromCurrency: string, toCurrency: string): Promise<number> {
+        try {
+            if (fromCurrency === toCurrency) {
+                Logger.log(`Same currency (${fromCurrency}), no conversion needed`);
+                return senderAmount;
+            }
+
+            const receivedAmount = await this.convertAmount(senderAmount, fromCurrency, toCurrency);
+            
+            Logger.log(`Transaction: ${senderAmount} ${fromCurrency} -> ${receivedAmount} ${toCurrency}`);
+            return receivedAmount;
+
+        } catch (error) {
+            Logger.error(`Transaction processing failed: ${error.message}`);
+            throw error;
+        }
+    }
 
 }
