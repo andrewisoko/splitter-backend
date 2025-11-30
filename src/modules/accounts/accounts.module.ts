@@ -9,6 +9,7 @@ import { User } from '../users/entities/user.entity';
 import { AuthService } from '../auth/auth.service';
 import { JwtService } from '@nestjs/jwt';
 import { Transactions } from '../transactions/entities/transactions.entity';
+import { ConversionCurrencies } from './currency-conversion';
 
 @Module({
   imports:[
@@ -16,7 +17,12 @@ import { Transactions } from '../transactions/entities/transactions.entity';
     UsersModule,
     ConfigModule,
   ],
-  providers: [AccountsService,AuthService,JwtService],
+  providers: [
+    AccountsService,
+    AuthService,
+    JwtService,
+    ConversionCurrencies
+  ],
   controllers: [AccountsController]
 })
 export class AccountsModule {}

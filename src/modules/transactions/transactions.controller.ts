@@ -113,25 +113,13 @@ export class TransactionsController {
         )
     }
     
-    // @UseGuards(JwtAuthGuard,RolesGuard)
-    // @Roles(Role.ADMIN,Role.USER) 
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN,Role.USER) 
     @Get()
     async getTransactions(
     @Query() filters: GetTransactionsDto 
     ) {
         return await this.transactionsService.getTransactions(filters);
     }
-
-    // @Get()
-    // async conversionTest(
-    //     @Query('conversionCurrency') conversionCurrency: string
-    //     ) {
-    //     const client = this.conv.oandaClient(this.configService);
-
-    //     await this.conv.oandaGetCurrencies(client);
-    //     const conversion = await this.conv.oandaConversions(client, conversionCurrency);
-
-    //     return { conversion };
-    //     }
     
 }

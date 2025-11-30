@@ -1,5 +1,5 @@
 import { ConfigService } from "@nestjs/config";
-import { Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { Injectable, Logger} from "@nestjs/common";
 import axios from 'axios';
 
 
@@ -18,31 +18,21 @@ export class ConversionCurrencies {
         return client
     };
 
-    private getOandaConfig() {
-        const apiKey = this.configService.get<string>("OANDA_API_KEY");
-        
-        if (!apiKey) {
-            throw new Error("OANDA_API_KEY is not configured");
-        }
 
-        return {
-            apiKey,
-            baseUrl: "https://api-fxtrade.oanda.com/v3"
-        };
-    }
+    oandaGetCurrencies(clientOanda): Promise<any> {
+        return new Promise((resolve, reject) => {
+            clientOanda.getCurrencies('oanda', (response) => {
+            if (response.success) {
+                resolve(response.data);
+            } else {
+                reject(`Error fetching currencies: ${response.errorCode}, ${response.errorMessage}`);
+                }
+              });
+            });
+            }
+   
 
-    oandaGetCurrencies(clientOanda){
-
-        clientOanda.getCurrencies('oanda', (response) => {
-        if (response.success) {
-            console.log('Currencies:', response.data);
-        } else {
-            console.error('Error fetching currencies', response.errorCode, response.errorMessage);
-        }
-        });
-    }
-
-    async convertAmount(amount: number, fromCurrency: string, toCurrency: string): Promise<number> {
+    async convertAmount(amount: number, fromCurrency: string, toCurrency: string): Promise<any> {
         try {
             if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) {
                 return amount;
@@ -81,7 +71,7 @@ export class ConversionCurrencies {
 
         } catch (error) {
             Logger.error(`Conversion failed: ${error.message}`);
-            return 0
+            throw error
         };
       };
     };

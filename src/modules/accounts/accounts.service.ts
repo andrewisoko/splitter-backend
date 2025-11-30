@@ -5,6 +5,7 @@ import { Account, AccountStatus } from './entities/account.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from '../auth/auth.service';
 import { Logger } from '@nestjs/common';
+import { ConversionCurrencies } from './currency-conversion';
 
 
 @Injectable()
@@ -12,6 +13,7 @@ export class AccountsService {
     constructor(@InjectRepository(Account) private accountRepository:Repository<Account>,
                 @InjectRepository(User) private userRepository:Repository<User>,
                 private authService:AuthService,
+                 private conversionCurrencies:ConversionCurrencies
     ){}
 
     async accountNumberGenerator():Promise<number>{ 
@@ -38,7 +40,13 @@ export class AccountsService {
     }
 
     async createAccount(currency:string,balance:number,username:string):Promise<Account>{ 
+
         const user = await this.userRepository.findOneBy({ userName: username });
+
+        const client = this.conversionCurrencies.oandaClient()
+        const currencyAcronyms = Object.keys(await this.conversionCurrencies.oandaGetCurrencies(client))
+        
+        if(!currencyAcronyms.includes(currency)) throw new NotFoundException("Currency not found.")
         if(!user) throw new NotFoundException("user not found")
         if(balance < 25) throw new Error("Insufficent balance")
 

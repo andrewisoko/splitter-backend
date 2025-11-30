@@ -8,13 +8,11 @@ import { AccountsModule } from '../accounts/accounts.module';
 import { Account } from '../accounts/entities/account.entity';
 import { AccountsService } from '../accounts/accounts.service';
 import { User } from '../users/entities/user.entity';
-import { UsersModule } from '../users/users.module';
-import { AuthModule } from '../auth/auth.module';
 import { AuthService } from '../auth/auth.service';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { TransactionsOps } from './transactionsOps';
-import { ConversionCurrencies } from './currency-conversion';
+import { ConversionCurrencies } from '../accounts/currency-conversion';
 
 
 

@@ -8,9 +8,8 @@ import { NotFoundException } from '@nestjs/common';
 import { Logger } from '@nestjs/common';
 import { GetTransactionsDto } from './dto/create_transactions.DTO';
 import { TransactionsOps } from './transactionsOps';
-import { DataSource } from 'typeorm';
 import { UnauthorizedException } from '@nestjs/common';
-import { ConversionCurrencies } from './currency-conversion';
+import { ConversionCurrencies } from '../accounts/currency-conversion';
 
 
 
@@ -20,8 +19,7 @@ export class TransactionsService {
     constructor(@InjectRepository(Transactions) private transactionsRepository:Repository<Transactions>,
                 @InjectRepository(Account) private accountRepository:Repository<Account>,
                 private transactionOps:TransactionsOps,
-                private dataSource: DataSource,
-                private conv:ConversionCurrencies
+                private conversionCurrencies:ConversionCurrencies
             ){}
 
 
