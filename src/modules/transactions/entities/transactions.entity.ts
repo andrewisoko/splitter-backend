@@ -33,8 +33,11 @@ export class Transactions{
     })
     transactionsType:TRANSACTIONS_TYPE;
 
-    @Column()
+    @Column({ type: 'float', nullable: false, default: 0 })
     amount:number;
+
+    @Column() 
+    currency:string;
 
     @Column()
     transactionDate: Date;
@@ -49,6 +52,14 @@ export class Transactions{
     
     @Column()
     timeStamp:Date;  
+
+    @IsOptional()
+    @Column({ type: 'float', nullable: true })
+    amountConverted:number;
+
+    @IsOptional()
+    @Column({ nullable: true })
+    secondCurrency:string
     
     @ManyToOne(()=>Account,account=>account.outgoingTransactions)
     @JoinColumn({ name: 'sourceAccountID' })

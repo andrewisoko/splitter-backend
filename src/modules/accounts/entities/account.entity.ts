@@ -27,7 +27,7 @@ export class Account{
     @Column()
     userReference:number;
 
-    @Column()
+    @Column({ type: 'float', nullable: false, default: 0 })
     balance:number;
 
     @Column()

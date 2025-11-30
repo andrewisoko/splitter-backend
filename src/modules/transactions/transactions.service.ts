@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { Repository } from 'typeorm';
 import { STATUS, Transactions } from './entities/transactions.entity';
 import { Account } from '../accounts/entities/account.entity';
@@ -34,41 +34,60 @@ export class TransactionsService {
                     accountA = await this.transactionOps.account(accountAId);
                     accountB = await this.transactionOps.account(accountBId);
                     
-        
+                    
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
                     if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
                     
 
+                    const amountConverted = await this.conversionCurrencies.convertAmount(amount,accountA.currency,accountB.currency)
 
+                    Logger.log(amountConverted)
                     await this.accountRepository.decrement({ accountID:accountAId },'balance', amount);
-                    await this.accountRepository.increment({ accountID:accountBId },'balance', amount);
-
+                    await this.accountRepository.increment({ accountID:accountBId },'balance', amountConverted);
+                    
                     /* Re-fetch accounts to get their updated balances*/
                     accountA = await this.transactionOps.account(accountAId);
                     accountB = await this.transactionOps.account(accountBId);
+                 
 
                     accountA.updatedAt = new Date()
                     accountB.updatedAt = new Date()
 
+                    
                     transaction = this.
-                    transactionOps.transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,accountAId,accountBId)
+                    transactionOps.transactionFieldsUpdate(
+                        amount,
+                        accountA.currency,
+                        TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,
+                        amountConverted,
+                        accountB.currency,
+                        accountAId,
+                        accountBId,
+                    )
 
                     await this.transactionOps.queryRunner(transaction,accountA,accountB)
 
-                    return transaction
+                    return transaction;
                     
                 } catch (error) {
                     transactionFailed = this.
                     transactionOps.
-                    transactionFieldsUpdate(amount,TRANSACTIONS_TYPE.TRANSFER,STATUS.FAILED,accountAId,accountBId);
+                    transactionFieldsUpdate(
+                        amount,
+                        accountA.currency,
+                        TRANSACTIONS_TYPE.TRANSFER,STATUS.FAILED,
+                        undefined,
+                        accountB.currency,
+                        accountAId,
+                        accountBId
+                    );
                     throw error;  
                     
                 }finally{
-                    await this.transactionOps.transactionFailed(transactionFailed)
+                    // await this.transactionOps.transactionFailed(transactionFailed)
                 }
-            }
-         
+            }        
             
             async depositTransaction(accountId:number,deposit:number,userName:string){
                 
@@ -82,31 +101,47 @@ export class TransactionsService {
                     
                     if (account.user.userName !== userName) throw new UnauthorizedException("You do not own this account");
                     if (!account) throw new NotFoundException('Account not found');
-                    if(account.balance + deposit >= 12000) throw new BadRequestException('Maximum fund amount reached');
-                    if( account.balance >= 12000) throw new BadRequestException('Maximum fund amount reached');
+             
+                    if((Number(account.balance) + Number(deposit)) >= 12000) throw new BadRequestException('Maximum fund amount reached');
+                    if( account.balance >= 12000) throw new BadRequestException('Account has already 12000 in funds');
                     
                     
                     await this.accountRepository.increment({ accountID:accountId },'balance',deposit);
                     account = await this.transactionOps.account(accountId);
                     
-                    account.updatedAt = new Date()
+                    account.updatedAt = new Date();
 
                     transaction = this.
                     transactionOps.
-                    transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.COMPLETED,accountId)
+                    transactionFieldsUpdate(
+                        deposit,
+                        account.currency,
+                        TRANSACTIONS_TYPE.DEPOSIT,STATUS.COMPLETED,
+                        undefined,
+                        undefined,
+                        accountId
+                    );
 
                     await this.transactionOps.queryRunner(transaction,account);
 
-                    return transaction
+                    return transaction;
                     
                 } catch (error) {
                     transactionFailed = this.
                     transactionOps.
-                    transactionFieldsUpdate(deposit,TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,accountId);
+                    transactionFieldsUpdate(
+                        deposit,
+                        account.currency,
+                        TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,
+                        undefined,
+                        undefined,
+                        accountId
+                    );
+
                     throw error;  
                 }
                 finally{
-                    await this.transactionOps.transactionFailed(transactionFailed)
+                    await this.transactionOps.transactionFailed(transactionFailed);
                 }
               
             }
@@ -123,7 +158,8 @@ export class TransactionsService {
 
                     if (account.user.userName !== userName) throw new UnauthorizedException("You do not own this account");
                     if(account.balance <= 0) throw new BadRequestException('Invald amount');
-                    if(account.balance < withdraw) throw new BadRequestException('invald amount'); 
+                    if(Number(account.balance) < Number(withdraw)) throw new BadRequestException('invald amount'); 
+
                     
                     await this.accountRepository.decrement({ accountID:accountId },'balance',withdraw);
                     account = await this.transactionOps.account(accountId);
@@ -131,7 +167,14 @@ export class TransactionsService {
 
                     transaction = this.
                     transactionOps.
-                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.COMPLETED,accountId);
+                    transactionFieldsUpdate(
+                        withdraw,
+                        account.currency,
+                        TRANSACTIONS_TYPE.WITHDRAW,STATUS.COMPLETED,
+                        undefined,
+                        undefined,
+                        accountId
+                    );
 
                     await this.transactionOps.queryRunner(transaction,account);
 
@@ -140,11 +183,18 @@ export class TransactionsService {
                 } catch (error) {
                     transactionFailed = this.
                     transactionOps.
-                    transactionFieldsUpdate(withdraw,TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,accountId);
+                    transactionFieldsUpdate(
+                        withdraw,
+                        account.currency,
+                        TRANSACTIONS_TYPE.WITHDRAW,STATUS.FAILED,
+                        undefined,
+                        undefined,
+                        accountId
+                    );
                     throw error;  
                 }
                 finally{
-                    await this.transactionOps.transactionFailed(transactionFailed)
+                    await this.transactionOps.transactionFailed(transactionFailed);
                 }
             }
 

@@ -32,7 +32,7 @@ export class ConversionCurrencies {
             }
    
 
-    async convertAmount(amount: number, fromCurrency: string, toCurrency: string): Promise<any> {
+    async convertAmount(amount: number, fromCurrency: string, toCurrency: string): Promise<number> {
         try {
             if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) {
                 return amount;

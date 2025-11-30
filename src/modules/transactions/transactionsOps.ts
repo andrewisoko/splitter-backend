@@ -66,11 +66,21 @@ export class TransactionsOps{
     }
 
 
-    transactionFieldsUpdate(amount:number,transtype:TRANSACTIONS_TYPE, status:STATUS,accountAId?:number,accountBId?:number){
+    transactionFieldsUpdate(
+        amount:number,
+        currency:string,
+        transtype:TRANSACTIONS_TYPE,
+        status:STATUS,
+        amountConverted?:number,
+        secondCurrency?:string,
+        accountAId?:number,
+        accountBId?:number,
+        ){
 
         /**Updates the Transaction fields with the required data */
 
         let transaction = new Transactions();
+        
 
         if (typeof(accountAId) !== "undefined") {
                 transaction.sourceAccountID = accountAId;
@@ -79,7 +89,14 @@ export class TransactionsOps{
         if (typeof(accountBId) !== "undefined") {
                 transaction.destinationAccountID = accountBId;
         }
+        if (typeof(amountConverted) !== "undefined") {
+                transaction.amountConverted = amountConverted;
+        }
+        if (typeof(secondCurrency) !== "undefined") {
+                transaction.secondCurrency = secondCurrency;
+        }
         transaction.amount = amount;
+        transaction.currency = currency;
         transaction.transactionsType = transtype;
         transaction.status = status,
         transaction.transactionDate = new Date();
