@@ -180,10 +180,6 @@ export class TransactionsService {
 
                 queBuilder.orderBy('t.transactionDate', filters.sort ?? 'DESC');
 
-                const conda = this.conv.oandaClient()
-                // Logger.log(this.conv.oandaGetCurrencies(conda))
-
-          
                 return queBuilder.getMany();
             }
 }
