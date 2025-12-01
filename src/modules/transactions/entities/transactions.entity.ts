@@ -33,7 +33,12 @@ export class Transactions{
     })
     transactionsType:TRANSACTIONS_TYPE;
 
-    @Column({ type: 'float', nullable: false, default: 0 })
+    @Column({ 
+        type: 'numeric',
+        precision: 12,
+        nullable: false,
+        default: 0 
+        })
     amount:number;
 
     @Column() 
@@ -54,7 +59,11 @@ export class Transactions{
     timeStamp:Date;  
 
     @IsOptional()
-    @Column({ type: 'float', nullable: true })
+     @Column({ 
+        type: 'numeric',
+        precision: 12,
+        nullable: true, 
+        })
     amountConverted:number;
 
     @IsOptional()
