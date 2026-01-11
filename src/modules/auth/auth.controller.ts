@@ -25,7 +25,8 @@ export class AuthController {
             userName:registerDto.userName,
             email:registerDto.email,
             number:registerDto.number,
-            password:hashedpassword
+            password:hashedpassword,
+            confirmPassword:hashedpassword
         })
     }
 

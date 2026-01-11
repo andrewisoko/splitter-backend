@@ -25,6 +25,10 @@ export class registerDto{
     @IsString()
     @IsNotEmpty()
     password:string
+    
+    @IsString()
+    @IsNotEmpty()
+    confirmPassword:string
 
     @IsOptional()
     @IsString()
