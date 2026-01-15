@@ -39,7 +39,7 @@ export class AccountsService {
         
     }
 
-    async createAccount(currency:string,balance:number,username:string):Promise<Account>{ 
+    async createAccount(currency:string,balance:string,username:string):Promise<Account>{ 
 
         const user = await this.userRepository.findOneBy({ userName: username });
 
@@ -48,15 +48,16 @@ export class AccountsService {
         
         if(!currencyAcronyms.includes(currency)) throw new NotFoundException("Currency not found.")
         if(!user) throw new NotFoundException("user not found")
-        if(balance < 25) throw new Error("Insufficent balance")
+        if(Number(balance) < 25) throw new Error("Insufficent balance")
 
         const accNumber = await this.accountNumberGenerator()
+        const numBalance = await Number(balance)
 
         const userAccount = await this.accountRepository.create({
 
             accountNumber:accNumber,
             currency:currency,
-            balance,
+            balance: numBalance,
             user:user,
             userReference:user.id,
             status:AccountStatus.ACTIVE,

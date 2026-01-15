@@ -19,7 +19,6 @@ export class UsersService {
     }
 
     createUser(data:Partial<registerDto>){
-        if (data.password !== data.confirmPassword) throw new UnauthorizedException("Passwords are not matching")
         const user = this.userRepository.create(data)
         return this.userRepository.save(user)
     }

@@ -15,12 +15,12 @@ export class AccountsController {
     constructor(private accountService:AccountsService,
     ){}
 
-    @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN,Role.USER) 
+    // @UseGuards(JwtAuthGuard,RolesGuard)
+    // @Roles(Role.ADMIN,Role.USER) 
 
     @Post('create')
     createAccount(
-        @Body() createAccountDto:{ currency:string; initialDeposit:number, username?:string; },
+        @Body() createAccountDto:{ currency:string; initialDeposit:string, username?:string; },
         @Request() req
     ){
         const {username} = req.user
