@@ -15,8 +15,8 @@ export class AccountsController {
     constructor(private accountService:AccountsService,
     ){}
 
-    // @UseGuards(JwtAuthGuard,RolesGuard)
-    // @Roles(Role.ADMIN,Role.USER) 
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN,Role.USER) 
 
     @Post('create')
     createAccount(

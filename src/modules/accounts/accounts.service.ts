@@ -43,10 +43,10 @@ export class AccountsService {
 
         const user = await this.userRepository.findOneBy({ userName: username });
 
-        const client = this.conversionCurrencies.oandaClient()
-        const currencyAcronyms = Object.keys(await this.conversionCurrencies.oandaGetCurrencies(client))
+        // const client = this.conversionCurrencies.oandaClient()
+        // const currencyAcronyms = Object.keys(await this.conversionCurrencies.oandaGetCurrencies(client))
         
-        if(!currencyAcronyms.includes(currency)) throw new NotFoundException("Currency not found.")
+        // if(!currencyAcronyms.includes(currency)) throw new NotFoundException("Currency not found.")
         if(!user) throw new NotFoundException("user not found")
         if(Number(balance) < 25) throw new Error("Insufficent balance")
 
