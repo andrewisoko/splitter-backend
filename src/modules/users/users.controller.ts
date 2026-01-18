@@ -12,8 +12,8 @@ import { UseGuards } from '@nestjs/common';
 export class UsersController {
     constructor( private usersService:UsersService){}
 
-    // @UseGuards(JwtAuthGuard,RolesGuard)
-    // @Roles(Role.ADMIN) 
+    @UseGuards(JwtAuthGuard,RolesGuard)
+    @Roles(Role.ADMIN) 
     @Get(':id')
     findUser(@Param('id',ParseIntPipe) id:number):Promise<User|null>{
         return this.usersService.findUserById(id)

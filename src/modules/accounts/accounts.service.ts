@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { Account, AccountStatus } from './entities/account.entity';
 import { User } from '../users/entities/user.entity';
 import { AuthService } from '../auth/auth.service';
+import { UsersService } from '../users/users.service';
 import { Logger } from '@nestjs/common';
 import { ConversionCurrencies } from './currency-conversion';
 
@@ -13,7 +14,7 @@ export class AccountsService {
     constructor(@InjectRepository(Account) private accountRepository:Repository<Account>,
                 @InjectRepository(User) private userRepository:Repository<User>,
                 private authService:AuthService,
-                 private conversionCurrencies:ConversionCurrencies
+                private userService:UsersService
     ){}
 
     async accountNumberGenerator():Promise<number>{ 
@@ -68,11 +69,11 @@ export class AccountsService {
         return this.accountRepository.save(userAccount)
     }
 
-    async findAllAccounts(password:string,email: string): Promise<Account[]> {
+    async findAllAccounts(email): Promise<Account[]> {
 
-        const validUser = await this.authService.validateUser(email, password);
+        const validUser = await this.userService.findUserByEmail(email)
         if (!validUser) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Invalid email');
         }
 
         const userWithAccounts = await this.userRepository.findOne({

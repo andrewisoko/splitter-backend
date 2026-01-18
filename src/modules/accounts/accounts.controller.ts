@@ -1,4 +1,4 @@
-import { Controller,Post,Body,Request, NotFoundException} from '@nestjs/common';
+import { Controller,Get,Post,Body,Request, NotFoundException} from '@nestjs/common';
 import { AccountsService } from './accounts.service';
 import { UseGuards } from '@nestjs/common';
 import { RolesGuard } from '../auth/auth_guard/roles.guard';
@@ -68,27 +68,15 @@ export class AccountsController {
     };
 
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN,Role.USER) 
-    @Post('find-all-accounts')
-    async findAllAccounts(
-        @Body() findAllAccountsDto:{password:string,email?:string},
-        @Request() req
-    ){
-        if (req.user.role === Role.ADMIN){
-
-        if(!findAllAccountsDto.email) throw new NotFoundException("email not found");
-
-        return this.accountService.findAllAccounts(
-            findAllAccountsDto.password,
-            findAllAccountsDto.email
-        )
-        };
-        const {email} = req.user
-        return this.accountService.findAllAccounts(
-            findAllAccountsDto.password,
-            email
-        )
-    }
+    @Roles(Role.ADMIN,Role.USER)
+    
+    @Get('find-all-accounts')
+        async findAllAccounts(
+            @Request() req
+        ){
+            const {email} = req.user
+            return this.accountService.findAllAccounts(email)
+        }
 
     @UseGuards(JwtAuthGuard,RolesGuard)
     @Roles(Role.ADMIN,Role.USER) 
