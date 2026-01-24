@@ -89,7 +89,7 @@ export class TransactionsService {
                 }
             }        
             
-            async depositTransaction(accountId:number,deposit:number,userName:string){
+            async depositTransaction(accountId:number,deposit:number,userName:string,currency:string){
                 
                 let transactionFailed;
                 let transaction;
