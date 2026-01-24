@@ -46,24 +46,12 @@ export class AccountsController {
     @Post('retrieve-account')
 
     async retrieveAccount(
-        @Body() retrieveAccountDto:{accountId: number,password:string,email?:string},
-        @Request() req
+        @Body() retrieveAccountDto:{userName:string,accountNumber:number},
     ){
 
-        const { email} = req.user;
-        if(req.user.role === Role.ADMIN){
-            
-            if(!retrieveAccountDto.email) throw new NotFoundException("email not found");
-            return this.accountService.retrieveAccount(
-            retrieveAccountDto.password,
-            retrieveAccountDto.accountId,
-            retrieveAccountDto.email
-            )};
-
         return this.accountService.retrieveAccount(
-            retrieveAccountDto.password,
-            retrieveAccountDto.accountId,
-            email
+            retrieveAccountDto.userName,
+            retrieveAccountDto.accountNumber,
         );
     };
 

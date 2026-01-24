@@ -26,7 +26,13 @@ export class TransactionsController {
     @UseFilters(new ForeignKeyExceptionFilter())
 
     transferFunds(
-        @Body() transferFundsDto:{accountAId: number, accountBId: number, amount: number, username?:string},
+        @Body() transferFundsDto:{
+            accountAId: number, 
+            accountBId: number,
+            amount: number, 
+            currency:string,
+            username?:string
+            },
         @Request() req
     ){
         const {username} = req.user;
@@ -42,13 +48,15 @@ export class TransactionsController {
              transferFundsDto.accountAId,
             transferFundsDto.accountBId,
             transferFundsDto.amount,
+            transferFundsDto.currency,
             transferFundsDto.username
             );
         };
         return this.transactionsService.transferFunds(
-             transferFundsDto.accountAId,
+            transferFundsDto.accountAId,
             transferFundsDto.accountBId,
             transferFundsDto.amount,
+            transferFundsDto.currency,
             username
         );
     };
@@ -59,12 +67,12 @@ export class TransactionsController {
     @UseFilters(new ForeignKeyExceptionFilter())
 
     depositTransaction(
-        @Body() depositTransactionsDto:{accountId:number,deposit:number,username:string},
+        @Body() depositTransactionsDto:{accountId:number,deposit:number,username:string,currency:string},
         @Request() req
     ){
         const {username} = req.user;
 
-        if (! depositTransactionsDto.accountId) throw new NotFoundException("Incorrect key declaration");
+        if (!depositTransactionsDto.accountId) throw new NotFoundException("Incorrect key declaration");
         
         if(req.user.role === Role.ADMIN){
 
@@ -73,14 +81,16 @@ export class TransactionsController {
             return this.transactionsService.depositTransaction(
             depositTransactionsDto.accountId,
             depositTransactionsDto.deposit,
-            depositTransactionsDto.username
+            depositTransactionsDto.username,
+            depositTransactionsDto.currency
             );
         };
 
         return this.transactionsService.depositTransaction(
             depositTransactionsDto.accountId,
             depositTransactionsDto.deposit,
-            username
+            username,
+            depositTransactionsDto.currency,
         )
     }
 
@@ -89,7 +99,7 @@ export class TransactionsController {
     @Post("withdraw")
     @UseFilters(new ForeignKeyExceptionFilter())
     withdrawTransaction(
-        @Body() withdrawTransactionsDto:{accountId:number,withdraw:number,username:string},
+        @Body() withdrawTransactionsDto:{accountId:number,withdraw:number,username:string,currency:string},
         @Request() req
 
     ){ 
@@ -102,14 +112,16 @@ export class TransactionsController {
             return this.transactionsService.withdrawTransaction(
                 withdrawTransactionsDto.accountId,
                 withdrawTransactionsDto.withdraw,
-                withdrawTransactionsDto.username
+                withdrawTransactionsDto.username,
+                withdrawTransactionsDto.currency
                 );
         }
 
         return this.transactionsService.withdrawTransaction(
             withdrawTransactionsDto.accountId,
             withdrawTransactionsDto.withdraw,
-            username
+            username,
+            withdrawTransactionsDto.currency
         )
     }
     

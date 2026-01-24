@@ -23,7 +23,13 @@ export class TransactionsService {
             ){}
 
 
-            async transferFunds(accountAId: number, accountBId: number, amount: number, username:string){
+            async transferFunds(
+                accountAId: number,
+                accountBId: number,
+                amount: number,
+                username:string,
+                currency:string
+                ){
 
                 let transactionFailed;
                 let transaction;
@@ -40,11 +46,11 @@ export class TransactionsService {
                     if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
                     
 
-                    const amountConverted = await this.conversionCurrencies.convertAmount(amount,accountA.currency,accountB.currency)
+                    // const amountConverted = await this.conversionCurrencies.convertAmount(amount,accountA.currency,accountB.currency)
 
-                    Logger.log(amountConverted)
+                    // Logger.log(amountConverted)
                     await this.accountRepository.decrement({ accountID:accountAId },'balance', amount);
-                    await this.accountRepository.increment({ accountID:accountBId },'balance', amountConverted);
+                    await this.accountRepository.increment({ accountID:accountBId },'balance', amount);
                     
                     /* Re-fetch accounts to get their updated balances*/
                     accountA = await this.transactionOps.account(accountAId);
@@ -58,9 +64,9 @@ export class TransactionsService {
                     transaction = this.
                     transactionOps.transactionFieldsUpdate(
                         amount,
-                        accountA.currency,
+                        currency,
                         TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,
-                        amountConverted,
+                        amount,
                         accountB.currency,
                         accountAId,
                         accountBId,
@@ -115,7 +121,7 @@ export class TransactionsService {
                     transactionOps.
                     transactionFieldsUpdate(
                         deposit,
-                        account.currency,
+                        currency,
                         TRANSACTIONS_TYPE.DEPOSIT,STATUS.COMPLETED,
                         undefined,
                         undefined,
@@ -131,7 +137,7 @@ export class TransactionsService {
                     transactionOps.
                     transactionFieldsUpdate(
                         deposit,
-                        account.currency,
+                        currency,
                         TRANSACTIONS_TYPE.DEPOSIT,STATUS.FAILED,
                         undefined,
                         undefined,
@@ -146,7 +152,7 @@ export class TransactionsService {
               
             }
 
-            async withdrawTransaction(accountId:number,withdraw:number,userName:string){
+            async withdrawTransaction(accountId:number,withdraw:number,userName:string,currency:string){
 
                 let transactionFailed;
                 let transaction;

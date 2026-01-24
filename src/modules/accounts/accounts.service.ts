@@ -78,7 +78,7 @@ export class AccountsService {
 
         const userWithAccounts = await this.userRepository.findOne({
             where: { id: validUser.id },
-            relations: ['accounts'],
+            relations: ['accounts']
         });
 
         if (!userWithAccounts || !userWithAccounts.accounts) {
@@ -88,17 +88,14 @@ export class AccountsService {
         }
 
 
-    async retrieveAccount(password: string, accountId: number, email:string ):Promise<Account> {
+    async retrieveAccount(userNameClient:string,accountNumber:number):Promise<Account> {
 
-
-        const validUser = await this.authService.validateUser(email, password);
-        if (!validUser) {
-            throw new UnauthorizedException('Invalid credentials');
-        }
-
-        const account = await this.accountRepository.findOne({ where:{accountID: accountId}});
+        const user = await this.userRepository.findBy({userName:userNameClient});
+         if (!user) throw new NotFoundException('Username not found');
+        
+        const account = await this.accountRepository.findOne({ where:{accountNumber:accountNumber}});
         if (!account) throw new NotFoundException('Account not found');
-
+        
         return account
         }
 
