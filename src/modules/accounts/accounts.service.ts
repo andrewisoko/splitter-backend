@@ -13,7 +13,7 @@ import { ConversionCurrencies } from './currency-conversion';
 export class AccountsService {
     constructor(@InjectRepository(Account) private accountRepository:Repository<Account>,
                 @InjectRepository(User) private userRepository:Repository<User>,
-                private authService:AuthService,
+                // private authService:AuthService,
                 private userService:UsersService
     ){}
 
@@ -77,7 +77,7 @@ export class AccountsService {
         }
 
         const userWithAccounts = await this.userRepository.findOne({
-            where: { id: validUser.id },
+            where: { id: validUser.id},
             relations: ['accounts']
         });
 
@@ -88,16 +88,32 @@ export class AccountsService {
         }
 
 
-    async retrieveAccount(userNameClient:string,accountNumber:number):Promise<Account> {
+    async retrieveAccount(
+        userNameClient: string,
+        accountNumber: number
+        ): Promise<any> {
 
-        const user = await this.userRepository.findBy({userName:userNameClient});
-         if (!user) throw new NotFoundException('Username not found');
-        
-        const account = await this.accountRepository.findOne({ where:{accountNumber:accountNumber}});
+        const user = await this.userRepository.findOne({
+            where: { userName: userNameClient }
+        });
+        if (!user) throw new NotFoundException('User not found');
+
+        const fullName = user.fullName
+ 
+
+        const account = await this.accountRepository.findOne({
+            where: { accountNumber }
+        });
         if (!account) throw new NotFoundException('Account not found');
-        
-        return account
-        }
+
+        const response = {
+            account,
+            fullName,
+        };
+
+  return response;
+}
+
 
         async deleteAccount(accountId:number, password:string, username:string){
 

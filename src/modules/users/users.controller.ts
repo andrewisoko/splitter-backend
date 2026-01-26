@@ -13,7 +13,7 @@ export class UsersController {
     constructor( private usersService:UsersService){}
 
     @UseGuards(JwtAuthGuard,RolesGuard)
-    @Roles(Role.ADMIN) 
+    @Roles(Role.ADMIN,Role.USER) 
     @Get(':id')
     findUser(@Param('id',ParseIntPipe) id:number):Promise<User|null>{
         return this.usersService.findUserById(id)

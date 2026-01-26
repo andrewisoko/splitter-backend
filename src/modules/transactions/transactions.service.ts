@@ -43,7 +43,7 @@ export class TransactionsService {
                     
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
-                    if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
+                    // if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
                     
 
                     // const amountConverted = await this.conversionCurrencies.convertAmount(amount,accountA.currency,accountB.currency)
