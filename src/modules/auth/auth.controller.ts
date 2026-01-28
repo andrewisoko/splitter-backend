@@ -38,6 +38,11 @@ export class AuthController {
         return this.authService.login(user)
     }
 
+    @Post('refresh')
+        async refresh(@Body('refreshToken') refreshToken: string) {
+        return this.authService.refresh(refreshToken);
+        }
+
     @Post('password-reset')
     async resetPassword(
           @Body() loginDto:LoginDto

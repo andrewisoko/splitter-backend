@@ -1,5 +1,6 @@
 import { Account } from 'src/modules/accounts/entities/account.entity';
 import {Entity,PrimaryGeneratedColumn,Column, OneToMany} from 'typeorm'
+import { RefreshToken } from 'src/modules/auth/refresh_token.entity';
 
 
 export enum Role {
@@ -33,7 +34,13 @@ export class User{
         email:string;
 
     @Column()
-        password:string;    
+        password:string;  
+    
+    @Column({ nullable: true })
+        refreshTokenHash?: string;
+
+    @Column({ nullable: true })
+        refreshTokenExpiresAt?: Date;
         
     @OneToMany(() => Account,account => account.user)
         accounts:Account[]

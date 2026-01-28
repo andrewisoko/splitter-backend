@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { User } from '../users/entities/user.entity';
 import { Repository } from 'typeorm';
 import { InjectRepository} from '@nestjs/typeorm';
+import { ConfigService } from '@nestjs/config';
 
 
 
@@ -14,6 +15,7 @@ import { InjectRepository} from '@nestjs/typeorm';
 export class AuthService {
     constructor( private readonly userService:UsersService,
         private readonly jwtService:JwtService,
+        private readonly configService:ConfigService,
         @InjectRepository(User) private userRepository:Repository<User>,
     ){}
     
@@ -28,18 +30,47 @@ export class AuthService {
 
     }
 
-    async login(user:User){
 
+    async login(user: User) {
 
-        const payload = { 
-            sub : user.id,
-            name: user.fullName,
+         const payload = { 
+             sub : user.id,
+             name: user.fullName,
             username:user.userName,
             email: user.email,
             role: user.role,
         }
-        return {access_token: this.jwtService.sign(payload)}
-    }
+        
+        const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });  // Short!
+        const refreshToken = this.jwtService.sign(payload, { 
+            secret: this.configService.get('JWT_REFRESH_SECRET'), 
+            expiresIn: '7d' 
+        });
+        
+        user.refreshTokenHash = await bcrypt.hash(refreshToken, 10);
+        user.refreshTokenExpiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+        await this.userRepository.save(user);
+        
+        return { access_token: accessToken, refresh_token: refreshToken };
+        };
+
+
+    async refresh(refreshToken: string) {
+        const decoded = this.jwtService.verify(refreshToken, { 
+            secret: this.configService.get('JWT_REFRESH_SECRET') 
+        });
+        
+        const user = await this.userRepository.findOne({ 
+            where: { id: decoded.sub } 
+        });
+        
+        if (!user || !await bcrypt.compare(refreshToken, user.refreshTokenHash!)) {
+            throw new UnauthorizedException('Invalid refresh token');
+        }
+        
+        return this.login(user);  
+        };
+
 
     async resetPassword(email:string,password:string){ 
 
