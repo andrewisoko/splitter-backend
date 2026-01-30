@@ -1,6 +1,6 @@
 import { Account } from 'src/modules/accounts/entities/account.entity';
 import {Entity,PrimaryGeneratedColumn,Column, OneToMany} from 'typeorm'
-import { RefreshToken } from 'src/modules/auth/refresh_token.entity';
+
 
 
 export enum Role {
