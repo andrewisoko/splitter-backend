@@ -18,12 +18,16 @@ import { Transactions } from './modules/transactions/entities/transactions.entit
 @Module({
   imports: [ConfigModule.forRoot({ isGlobal: true,
     envFilePath: __dirname + '/../.env',
-  }), UsersModule, AccountsModule, TransactionsModule,AuthModule,
-    TypeOrmModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory:(configService:ConfigService) => {
-        return{
+  }), 
+  UsersModule,
+  AccountsModule,
+  TransactionsModule,
+  AuthModule,
+  TypeOrmModule.forRootAsync({
+    imports: [ConfigModule],
+    inject: [ConfigService],
+    useFactory:(configService:ConfigService) => {
+      return{
             type: 'postgres',
             host: configService.get<string>('DB_HOST'),
             port: parseInt(configService.get<string>('DB_PORT') ?? '5432', 10), 
