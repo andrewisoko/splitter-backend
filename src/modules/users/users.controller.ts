@@ -28,13 +28,13 @@ export class UsersController {
     ){
         const {id} = req.user
         if(req.user.role === Role.ADMIN){
-            // return this.usersService.deleteUser(idUser) 
-            return "User Succesfully deleted"
+            return this.usersService.deleteUser(idUser) 
+            // return "User Successfully deleted"
         };
 
         if(idUser != id) throw new UnauthorizedException("id not belonging to account")
-            return "User Succesfully deleted"
-        // return this.usersService.deleteUser(idUser) 
+            // return "User Successfully deleted"
+        return this.usersService.deleteUser(idUser) 
     }
  
     @UseGuards(JwtAuthGuard,RolesGuard)  
