@@ -1,12 +1,53 @@
 import { ConfigService } from "@nestjs/config";
 import { Injectable, Logger} from "@nestjs/common";
 import axios from 'axios';
+import { url } from "inspector";
+import { resolve } from "path";
+import { rejects } from "assert";
 
 
 
 @Injectable()
 export class ConversionCurrencies {
     constructor(private readonly configService:ConfigService){}
+
+
+    /* Exchange Rate API (Free) */
+
+    async getExchangeRate(baseCurrency:string,targetCurrency:string):Promise<any>{
+
+        try {
+            const URL = `https://v6.exchangerate-api.com/v6/${this.configService.get<string>("EXRATEAPI_KEY")}/latest/${baseCurrency}`;
+
+            console.log(`check key:${this.configService.get<string>("EXRATEAPI_KEY")}`);
+            const response = await fetch(URL);
+
+            const data = await response.json();
+            console.log(`data:${data}`);
+
+            return new Promise((resolve,reject) => {
+
+                const exchangeRate = data.rates[targetCurrency];
+                console.log(`exhchangeRate:${exchangeRate}`);
+
+                if (exchangeRate){
+                    resolve(exchangeRate)
+                }else{
+                    reject(`couldn't get exchange rate for ${targetCurrency}`)
+                }
+            });
+            
+        } catch (error) {
+            console.log(`error:${error}`)
+        };
+    };
+
+    async convertCurrency(baseCurrency:string,targetCurrency:string,amount:number){
+        const exchangeRate = await this.getExchangeRate(baseCurrency,targetCurrency);
+        return amount * exchangeRate
+    }
+
+    /* Oanda (need subscription) */
 
     oandaClient(){
 
@@ -20,6 +61,7 @@ export class ConversionCurrencies {
 
 
     oandaGetCurrencies(clientOanda): Promise<any> {
+
         return new Promise((resolve, reject) => {
             clientOanda.getCurrencies('oanda', (response) => {
             if (response.success) {
