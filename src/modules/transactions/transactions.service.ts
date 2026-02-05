@@ -45,12 +45,15 @@ export class TransactionsService {
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
                     // if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
                     
+                    // const getExchangeRate = await this.conversionCurrencies.getExchangeRate(accountA.currency,accountB.currency);
+                    const amountConverted = await this.conversionCurrencies.convertAmountExRateApi(accountA.currency,accountB.currency,amount);
 
-                    // const amountConverted = await this.conversionCurrencies.convertAmount(amount,accountA.currency,accountB.currency)
+                     Logger.log(amountConverted)
+
 
                     // Logger.log(amountConverted)
                     await this.accountRepository.decrement({ accountID:accountAId },'balance', amount);
-                    await this.accountRepository.increment({ accountID:accountBId },'balance', amount);
+                    await this.accountRepository.increment({ accountID:accountBId },'balance', amountConverted);
                     
                     /* Re-fetch accounts to get their updated balances*/
                     accountA = await this.transactionOps.account(accountAId);
@@ -66,7 +69,7 @@ export class TransactionsService {
                         amount,
                         currency,
                         TRANSACTIONS_TYPE.TRANSFER,STATUS.COMPLETED,
-                        amount,
+                        amountConverted,
                         accountB.currency,
                         accountAId,
                         accountBId,

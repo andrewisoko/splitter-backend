@@ -42,7 +42,7 @@ export class ConversionCurrencies {
         };
     };
 
-    async convertCurrency(baseCurrency:string,targetCurrency:string,amount:number){
+    async convertAmountExRateApi(baseCurrency:string,targetCurrency:string,amount:number){
         const exchangeRate = await this.getExchangeRate(baseCurrency,targetCurrency);
         return amount * exchangeRate
     }
@@ -74,7 +74,7 @@ export class ConversionCurrencies {
             }
    
 
-    async convertAmount(amount: number, fromCurrency: string, toCurrency: string): Promise<number> {
+    async convertAmountOanda(amount: number, fromCurrency: string, toCurrency: string): Promise<number> {
         try {
             if (fromCurrency.toUpperCase() === toCurrency.toUpperCase()) {
                 return amount;
