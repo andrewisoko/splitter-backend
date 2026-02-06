@@ -36,20 +36,18 @@ export class TransactionsService {
                 let accountA;
                 let accountB;
 
+
                 try {
                     accountA = await this.transactionOps.account(accountAId);
                     accountB = await this.transactionOps.account(accountBId);
-                    
-                    
+
                     if (accountAId === accountBId) throw new BadRequestException("Invalid Transaction");
                     if (accountA.balance < amount) throw new BadRequestException('Insufficient funds in source account');
-                    // if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
+                    if (accountA.user.userName !== username) throw new UnauthorizedException("You do not own this account");
+
                     
                     // const getExchangeRate = await this.conversionCurrencies.getExchangeRate(accountA.currency,accountB.currency);
                     const amountConverted = await this.conversionCurrencies.convertAmountExRateApi(accountA.currency,accountB.currency,amount);
-
-                     Logger.log(amountConverted)
-
 
                     // Logger.log(amountConverted)
                     await this.accountRepository.decrement({ accountID:accountAId },'balance', amount);
@@ -94,7 +92,7 @@ export class TransactionsService {
                     throw error;  
                     
                 }finally{
-                    // await this.transactionOps.transactionFailed(transactionFailed)
+                    await this.transactionOps.transactionFailed(transactionFailed)
                 }
             }        
             

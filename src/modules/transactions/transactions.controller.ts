@@ -48,16 +48,16 @@ export class TransactionsController {
              transferFundsDto.accountAId,
             transferFundsDto.accountBId,
             transferFundsDto.amount,
-            transferFundsDto.currency,
-            transferFundsDto.username
+            transferFundsDto.username,
+            transferFundsDto.currency
             );
         };
         return this.transactionsService.transferFunds(
             transferFundsDto.accountAId,
             transferFundsDto.accountBId,
             transferFundsDto.amount,
+            username,
             transferFundsDto.currency,
-            username
         );
     };
 

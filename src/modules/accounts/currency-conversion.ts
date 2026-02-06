@@ -1,9 +1,6 @@
 import { ConfigService } from "@nestjs/config";
 import { Injectable, Logger} from "@nestjs/common";
 import axios from 'axios';
-import { url } from "inspector";
-import { resolve } from "path";
-import { rejects } from "assert";
 
 
 
@@ -19,17 +16,12 @@ export class ConversionCurrencies {
         try {
             const URL = `https://v6.exchangerate-api.com/v6/${this.configService.get<string>("EXRATEAPI_KEY")}/latest/${baseCurrency}`;
 
-            console.log(`check key:${this.configService.get<string>("EXRATEAPI_KEY")}`);
             const response = await fetch(URL);
 
             const data = await response.json();
-            console.log(`data:${data}`);
 
             return new Promise((resolve,reject) => {
-
-                const exchangeRate = data.rates[targetCurrency];
-                console.log(`exhchangeRate:${exchangeRate}`);
-
+                const exchangeRate = data.conversion_rates[targetCurrency];
                 if (exchangeRate){
                     resolve(exchangeRate)
                 }else{
